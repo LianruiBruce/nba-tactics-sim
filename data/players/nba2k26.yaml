@@ -1,0 +1,134 @@
+# Ratings follow NBA 2K attribute names and 25-99 scale.
+# Values are approximations of NBA 2K26 launch ratings entered from memory;
+# verify against 2kratings.com before calibrating the engine.
+source: "NBA 2K26 launch ratings (approximate, unverified)"
+players:
+  - id: curry
+    name: Stephen Curry
+    pos: PG
+    height_in: 74
+    wingspan_in: 76
+    weight_lb: 185
+    inside_scoring: {close_shot: 82, driving_layup: 88, driving_dunk: 30, standing_dunk: 25, post_control: 50}
+    outside_scoring: {mid_range: 92, three_point: 99, free_throw: 95, shot_iq: 97, offensive_consistency: 95}
+    playmaking: {pass_accuracy: 88, ball_handle: 94, speed_with_ball: 86, pass_iq: 87, pass_vision: 87}
+    defense: {interior_defense: 40, perimeter_defense: 70, steal: 65, block: 35, help_defense_iq: 72, pass_perception: 72, defensive_consistency: 70}
+    rebounding: {offensive_rebound: 30, defensive_rebound: 50}
+    athleticism: {speed: 85, acceleration: 86, strength: 50, vertical: 60, stamina: 95, hustle: 85}
+
+  - id: booker
+    name: Devin Booker
+    pos: SG
+    height_in: 77
+    wingspan_in: 80
+    weight_lb: 206
+    inside_scoring: {close_shot: 82, driving_layup: 87, driving_dunk: 65, standing_dunk: 30, post_control: 72}
+    outside_scoring: {mid_range: 93, three_point: 85, free_throw: 90, shot_iq: 90, offensive_consistency: 92}
+    playmaking: {pass_accuracy: 85, ball_handle: 88, speed_with_ball: 80, pass_iq: 84, pass_vision: 82}
+    defense: {interior_defense: 45, perimeter_defense: 68, steal: 60, block: 35, help_defense_iq: 65, pass_perception: 65, defensive_consistency: 62}
+    rebounding: {offensive_rebound: 30, defensive_rebound: 50}
+    athleticism: {speed: 80, acceleration: 80, strength: 60, vertical: 70, stamina: 92, hustle: 75}
+
+  - id: tatum
+    name: Jayson Tatum
+    pos: SF
+    height_in: 80
+    wingspan_in: 83
+    weight_lb: 210
+    inside_scoring: {close_shot: 82, driving_layup: 84, driving_dunk: 75, standing_dunk: 50, post_control: 75}
+    outside_scoring: {mid_range: 86, three_point: 85, free_throw: 86, shot_iq: 86, offensive_consistency: 88}
+    playmaking: {pass_accuracy: 80, ball_handle: 84, speed_with_ball: 75, pass_iq: 80, pass_vision: 78}
+    defense: {interior_defense: 65, perimeter_defense: 80, steal: 65, block: 60, help_defense_iq: 80, pass_perception: 70, defensive_consistency: 78}
+    rebounding: {offensive_rebound: 45, defensive_rebound: 75}
+    athleticism: {speed: 75, acceleration: 76, strength: 65, vertical: 70, stamina: 95, hustle: 80}
+
+  - id: giannis
+    name: Giannis Antetokounmpo
+    pos: PF
+    height_in: 83
+    wingspan_in: 87
+    weight_lb: 243
+    inside_scoring: {close_shot: 92, driving_layup: 95, driving_dunk: 98, standing_dunk: 92, post_control: 85}
+    outside_scoring: {mid_range: 62, three_point: 60, free_throw: 62, shot_iq: 85, offensive_consistency: 92}
+    playmaking: {pass_accuracy: 80, ball_handle: 78, speed_with_ball: 80, pass_iq: 80, pass_vision: 78}
+    defense: {interior_defense: 88, perimeter_defense: 82, steal: 60, block: 78, help_defense_iq: 88, pass_perception: 65, defensive_consistency: 85}
+    rebounding: {offensive_rebound: 75, defensive_rebound: 92}
+    athleticism: {speed: 82, acceleration: 78, strength: 90, vertical: 82, stamina: 95, hustle: 90}
+
+  - id: jokic
+    name: Nikola Jokic
+    pos: C
+    height_in: 83
+    wingspan_in: 87
+    weight_lb: 284
+    inside_scoring: {close_shot: 96, driving_layup: 80, driving_dunk: 40, standing_dunk: 75, post_control: 97}
+    outside_scoring: {mid_range: 90, three_point: 82, free_throw: 82, shot_iq: 98, offensive_consistency: 95}
+    playmaking: {pass_accuracy: 98, ball_handle: 80, speed_with_ball: 55, pass_iq: 99, pass_vision: 99}
+    defense: {interior_defense: 75, perimeter_defense: 50, steal: 70, block: 55, help_defense_iq: 80, pass_perception: 85, defensive_consistency: 70}
+    rebounding: {offensive_rebound: 85, defensive_rebound: 96}
+    athleticism: {speed: 55, acceleration: 50, strength: 92, vertical: 40, stamina: 95, hustle: 80}
+
+  - id: sga
+    name: Shai Gilgeous-Alexander
+    pos: PG
+    height_in: 78
+    wingspan_in: 84
+    weight_lb: 195
+    inside_scoring: {close_shot: 88, driving_layup: 96, driving_dunk: 60, standing_dunk: 30, post_control: 70}
+    outside_scoring: {mid_range: 95, three_point: 82, free_throw: 92, shot_iq: 95, offensive_consistency: 96}
+    playmaking: {pass_accuracy: 85, ball_handle: 92, speed_with_ball: 85, pass_iq: 86, pass_vision: 84}
+    defense: {interior_defense: 50, perimeter_defense: 78, steal: 82, block: 45, help_defense_iq: 75, pass_perception: 82, defensive_consistency: 75}
+    rebounding: {offensive_rebound: 35, defensive_rebound: 55}
+    athleticism: {speed: 84, acceleration: 86, strength: 55, vertical: 65, stamina: 95, hustle: 82}
+
+  - id: edwards
+    name: Anthony Edwards
+    pos: SG
+    height_in: 76
+    wingspan_in: 81
+    weight_lb: 225
+    inside_scoring: {close_shot: 80, driving_layup: 87, driving_dunk: 92, standing_dunk: 40, post_control: 60}
+    outside_scoring: {mid_range: 82, three_point: 86, free_throw: 82, shot_iq: 84, offensive_consistency: 88}
+    playmaking: {pass_accuracy: 78, ball_handle: 85, speed_with_ball: 84, pass_iq: 76, pass_vision: 74}
+    defense: {interior_defense: 55, perimeter_defense: 82, steal: 72, block: 50, help_defense_iq: 72, pass_perception: 70, defensive_consistency: 75}
+    rebounding: {offensive_rebound: 40, defensive_rebound: 60}
+    athleticism: {speed: 88, acceleration: 88, strength: 78, vertical: 90, stamina: 96, hustle: 85}
+
+  - id: lebron
+    name: LeBron James
+    pos: SF
+    height_in: 81
+    wingspan_in: 84
+    weight_lb: 250
+    inside_scoring: {close_shot: 90, driving_layup: 92, driving_dunk: 80, standing_dunk: 60, post_control: 85}
+    outside_scoring: {mid_range: 80, three_point: 80, free_throw: 74, shot_iq: 92, offensive_consistency: 92}
+    playmaking: {pass_accuracy: 92, ball_handle: 86, speed_with_ball: 74, pass_iq: 95, pass_vision: 95}
+    defense: {interior_defense: 60, perimeter_defense: 65, steal: 60, block: 50, help_defense_iq: 80, pass_perception: 72, defensive_consistency: 60}
+    rebounding: {offensive_rebound: 45, defensive_rebound: 75}
+    athleticism: {speed: 72, acceleration: 70, strength: 85, vertical: 65, stamina: 88, hustle: 70}
+
+  - id: durant
+    name: Kevin Durant
+    pos: PF
+    height_in: 83
+    wingspan_in: 89
+    weight_lb: 240
+    inside_scoring: {close_shot: 90, driving_layup: 85, driving_dunk: 65, standing_dunk: 60, post_control: 88}
+    outside_scoring: {mid_range: 97, three_point: 88, free_throw: 90, shot_iq: 95, offensive_consistency: 95}
+    playmaking: {pass_accuracy: 80, ball_handle: 85, speed_with_ball: 72, pass_iq: 80, pass_vision: 76}
+    defense: {interior_defense: 65, perimeter_defense: 70, steal: 55, block: 70, help_defense_iq: 72, pass_perception: 62, defensive_consistency: 65}
+    rebounding: {offensive_rebound: 35, defensive_rebound: 70}
+    athleticism: {speed: 70, acceleration: 68, strength: 60, vertical: 55, stamina: 88, hustle: 70}
+
+  - id: wembanyama
+    name: Victor Wembanyama
+    pos: C
+    height_in: 88
+    wingspan_in: 96
+    weight_lb: 235
+    inside_scoring: {close_shot: 85, driving_layup: 80, driving_dunk: 80, standing_dunk: 92, post_control: 70}
+    outside_scoring: {mid_range: 78, three_point: 76, free_throw: 82, shot_iq: 80, offensive_consistency: 82}
+    playmaking: {pass_accuracy: 72, ball_handle: 72, speed_with_ball: 65, pass_iq: 70, pass_vision: 68}
+    defense: {interior_defense: 95, perimeter_defense: 80, steal: 70, block: 99, help_defense_iq: 92, pass_perception: 75, defensive_consistency: 90}
+    rebounding: {offensive_rebound: 70, defensive_rebound: 92}
+    athleticism: {speed: 72, acceleration: 70, strength: 60, vertical: 80, stamina: 88, hustle: 85}
