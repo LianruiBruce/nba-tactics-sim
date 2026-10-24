@@ -4,6 +4,12 @@
 
 设计方案：https://claude.ai/artifact/Cyp5Ju3peKZyprNP4VwUm5
 
+![弹簧战术：Curry 借掩护接球三分](docs/demo.gif)
+
+![西班牙挡拆：Doncic 三分](docs/spain_pnr.gif)
+
+两段 GIF 都来自 `replays/sample.json`（Team Curry vs Team Luka 第一节），用 `python scripts/make_gif.py --start <秒> --end <秒>` 生成。
+
 ## 快速开始
 
 ```bash
