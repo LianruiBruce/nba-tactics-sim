@@ -1,8 +1,14 @@
-"""Half-court geometry.
+"""Full-court geometry.
 
-Units are feet. Origin is the left baseline corner as seen from half court:
-x runs along the baseline (0..50), y runs from the baseline toward the
-half-court line (0..47). The basket is at (25, 5.25).
+Global frame, in feet: x runs along the court length (0..94), y across it
+(0..50). Baskets sit 5.25 ft from each baseline at (5.25, 25) and (88.75, 25).
+
+Each team attacks one basket, given by `direction`: +1 attacks the basket at
+x = 88.75, -1 the one at x = 5.25. Tactics are written in a local frame seen
+from half court facing the attacked basket: `lx` runs across the court from
+the offense's left sideline (0) to its right sideline (50), and `ly` is the
+distance from the attacked baseline (0 at the baseline, 47 at half court,
+94 at the far baseline). Geometry below takes local coordinates.
 """
 
 from __future__ import annotations
@@ -11,20 +17,45 @@ import math
 
 import numpy as np
 
+LENGTH = 94.0
 WIDTH = 50.0
-HALF_LENGTH = 47.0
-BASKET = np.array([25.0, 5.25])
+HALF = 47.0
+BASKET_FROM_BASELINE = 5.25
+BASKET_LOCAL = np.array([25.0, BASKET_FROM_BASELINE])
 
 THREE_ARC_RADIUS = 23.75
-THREE_CORNER_DX = 22.0  # corner lines sit 22 ft from the basket center
-THREE_BREAK_Y = BASKET[1] + math.sqrt(THREE_ARC_RADIUS**2 - THREE_CORNER_DX**2)  # ~14.2
+THREE_CORNER_DX = 22.0
+THREE_BREAK_LY = BASKET_FROM_BASELINE + math.sqrt(THREE_ARC_RADIUS**2 - THREE_CORNER_DX**2)
 
 PAINT_HALF_WIDTH = 8.0
-PAINT_LENGTH = 19.0
-RESTRICTED_RADIUS = 4.0
+PAINT_LENGTH = 19.0  # baseline to free-throw line
+RIM_ZONE = 4.0  # "at the rim" shots, matches Cleaning the Glass
+SHORT_MID_MAX = 14.0
 PLAYER_RADIUS = 1.25
+FT_SPOT_LOCAL = np.array([25.0, 19.0])
 
-# Named tactical spots. Macro actions move players between these.
+
+def to_global(local, direction: int) -> np.ndarray:
+    local = np.asarray(local, dtype=float)
+    lx, ly = local[..., 0], local[..., 1]
+    if direction > 0:
+        return np.stack([LENGTH - ly, WIDTH - lx], axis=-1)
+    return np.stack([ly, lx], axis=-1)
+
+
+def to_local(glob, direction: int) -> np.ndarray:
+    glob = np.asarray(glob, dtype=float)
+    x, y = glob[..., 0], glob[..., 1]
+    if direction > 0:
+        return np.stack([WIDTH - y, LENGTH - x], axis=-1)
+    return np.stack([y, x], axis=-1)
+
+
+def basket(direction: int) -> np.ndarray:
+    return to_global(BASKET_LOCAL, direction)
+
+
+# Named half-court spots in the local frame.
 REGIONS: dict[str, tuple[float, float]] = {
     "left_corner": (3.0, 3.5),
     "right_corner": (47.0, 3.5),
@@ -43,38 +74,47 @@ REGIONS: dict[str, tuple[float, float]] = {
     "right_slot": (34.0, 29.5),
 }
 REGION_NAMES = list(REGIONS)
-REGION_XY = np.array([REGIONS[n] for n in REGION_NAMES])
+REGION_LOCAL = np.array([REGIONS[n] for n in REGION_NAMES])
 
 
-def dist_to_basket(p) -> float:
-    return float(math.hypot(p[0] - BASKET[0], p[1] - BASKET[1]))
+def dist_to_basket(local) -> float:
+    return float(math.hypot(local[0] - BASKET_LOCAL[0], local[1] - BASKET_LOCAL[1]))
 
 
-def is_three(p) -> bool:
-    """True if a shot from p is worth 3. Standing on the line is a 2."""
-    dx = abs(float(p[0]) - BASKET[0])
-    if p[1] <= THREE_BREAK_Y:
+def is_three(local) -> bool:
+    """True if a shot from `local` is worth 3. Standing on the line is a 2."""
+    dx = abs(float(local[0]) - BASKET_LOCAL[0])
+    if local[1] <= THREE_BREAK_LY:
         return bool(dx > THREE_CORNER_DX)
-    return dist_to_basket(p) > THREE_ARC_RADIUS
+    return dist_to_basket(local) > THREE_ARC_RADIUS
 
 
-def in_paint(p) -> bool:
-    return abs(p[0] - BASKET[0]) <= PAINT_HALF_WIDTH and 0.0 <= p[1] <= PAINT_LENGTH
+def in_paint(local) -> bool:
+    return bool(abs(local[0] - BASKET_LOCAL[0]) <= PAINT_HALF_WIDTH and 0.0 <= local[1] <= PAINT_LENGTH)
 
 
-def shot_zone(p) -> str:
-    """One of: rim, paint, mid, corner3, above3."""
-    if is_three(p):
-        return "corner3" if p[1] <= THREE_BREAK_Y else "above3"
-    if dist_to_basket(p) <= RESTRICTED_RADIUS:
+def in_frontcourt(local) -> bool:
+    return bool(local[1] < HALF)
+
+
+def shot_zone(local) -> str:
+    """rim, short_mid, long_mid, corner3 or above3 (Cleaning the Glass buckets)."""
+    if is_three(local):
+        return "corner3" if local[1] <= THREE_BREAK_LY else "above3"
+    d = dist_to_basket(local)
+    if d <= RIM_ZONE:
         return "rim"
-    if in_paint(p):
-        return "paint"
-    return "mid"
+    if d <= SHORT_MID_MAX:
+        return "short_mid"
+    return "long_mid"
 
 
-def clamp_to_court(pos: np.ndarray) -> np.ndarray:
-    """Keep bodies inside the half court (in place)."""
-    np.clip(pos[..., 0], PLAYER_RADIUS, WIDTH - PLAYER_RADIUS, out=pos[..., 0])
-    np.clip(pos[..., 1], PLAYER_RADIUS, HALF_LENGTH - PLAYER_RADIUS, out=pos[..., 1])
+def clamp_inbounds(pos: np.ndarray, margin: float = PLAYER_RADIUS) -> np.ndarray:
+    """Keep bodies on the floor (global frame, in place)."""
+    np.clip(pos[..., 0], margin, LENGTH - margin, out=pos[..., 0])
+    np.clip(pos[..., 1], margin, WIDTH - margin, out=pos[..., 1])
     return pos
+
+
+def out_of_bounds(glob) -> bool:
+    return bool(glob[0] < 0 or glob[0] > LENGTH or glob[1] < 0 or glob[1] > WIDTH)

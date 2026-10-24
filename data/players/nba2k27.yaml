@@ -1,0 +1,552 @@
+source: NBA 2K27 current ratings, read from 2kratings.com player pages on 2026-10-24
+players:
+- id: curry
+  name: Stephen Curry
+  team: Golden State Warriors
+  pos: PG
+  overall: 93
+  height_in: 74
+  wingspan_in: 76
+  weight_lb: 185
+  outside_scoring:
+    three_point: 99
+    mid_range: 94
+    close_shot: 98
+    free_throw: 93
+    offensive_consistency: 98
+    shot_iq: 75
+  athleticism:
+    speed: 83
+    strength: 48
+    agility: 84
+    vertical: 73
+    hustle: 85
+    stamina: 98
+    overall_durability: 70
+  inside_scoring:
+    layup: 95
+    driving_dunk: 36
+    standing_dunk: 25
+    post_hook: 35
+    post_fade: 52
+    post_control: 35
+    draw_foul: 78
+    hands: 98
+  playmaking:
+    ball_handle: 97
+    speed_with_ball: 83
+    pass_accuracy: 89
+    pass_vision: 74
+    pass_iq: 90
+  defense:
+    block: 51
+    steal: 49
+    pass_perception: 68
+    interior_defense: 30
+    perimeter_defense: 69
+    help_defense_iq: 70
+    defensive_consistency: 65
+  rebounding:
+    defensive_rebound: 53
+    offensive_rebound: 32
+  url: https://www.2kratings.com/stephen-curry
+- id: booker
+  name: Devin Booker
+  team: Phoenix Suns
+  pos: SG
+  overall: 91
+  height_in: 77
+  wingspan_in: 80
+  weight_lb: 206
+  outside_scoring:
+    three_point: 86
+    mid_range: 94
+    close_shot: 96
+    free_throw: 87
+    offensive_consistency: 95
+    shot_iq: 85
+  athleticism:
+    speed: 83
+    strength: 64
+    agility: 80
+    vertical: 79
+    hustle: 95
+    stamina: 95
+    overall_durability: 83
+  inside_scoring:
+    layup: 95
+    driving_dunk: 75
+    standing_dunk: 30
+    post_hook: 74
+    post_fade: 79
+    post_control: 84
+    draw_foul: 87
+    hands: 98
+  playmaking:
+    ball_handle: 92
+    speed_with_ball: 83
+    pass_accuracy: 80
+    pass_vision: 75
+    pass_iq: 80
+  defense:
+    block: 45
+    steal: 40
+    pass_perception: 74
+    interior_defense: 58
+    perimeter_defense: 75
+    help_defense_iq: 74
+    defensive_consistency: 65
+  rebounding:
+    defensive_rebound: 52
+    offensive_rebound: 36
+  url: https://www.2kratings.com/devin-booker
+- id: tatum
+  name: Jayson Tatum
+  team: Boston Celtics
+  pos: SF
+  overall: 93
+  height_in: 80
+  wingspan_in: 83
+  weight_lb: 210
+  outside_scoring:
+    three_point: 88
+    mid_range: 91
+    close_shot: 90
+    free_throw: 82
+    offensive_consistency: 95
+    shot_iq: 90
+  athleticism:
+    speed: 82
+    strength: 71
+    agility: 88
+    vertical: 83
+    hustle: 98
+    stamina: 95
+    overall_durability: 68
+  inside_scoring:
+    layup: 95
+    driving_dunk: 89
+    standing_dunk: 50
+    post_hook: 79
+    post_fade: 86
+    post_control: 88
+    draw_foul: 88
+    hands: 98
+  playmaking:
+    ball_handle: 86
+    speed_with_ball: 79
+    pass_accuracy: 78
+    pass_vision: 72
+    pass_iq: 84
+  defense:
+    block: 37
+    steal: 63
+    pass_perception: 84
+    interior_defense: 81
+    perimeter_defense: 85
+    help_defense_iq: 89
+    defensive_consistency: 85
+  rebounding:
+    defensive_rebound: 89
+    offensive_rebound: 34
+  url: https://www.2kratings.com/jayson-tatum
+- id: giannis
+  name: Giannis Antetokounmpo
+  team: Miami Heat
+  pos: PF
+  overall: 96
+  height_in: 83
+  wingspan_in: 88
+  weight_lb: 243
+  outside_scoring:
+    three_point: 62
+    mid_range: 59
+    close_shot: 96
+    free_throw: 65
+    offensive_consistency: 98
+    shot_iq: 90
+  athleticism:
+    speed: 89
+    strength: 94
+    agility: 86
+    vertical: 85
+    hustle: 95
+    stamina: 98
+    overall_durability: 70
+  inside_scoring:
+    layup: 98
+    driving_dunk: 91
+    standing_dunk: 85
+    post_hook: 79
+    post_fade: 74
+    post_control: 91
+    draw_foul: 97
+    hands: 95
+  playmaking:
+    ball_handle: 87
+    speed_with_ball: 80
+    pass_accuracy: 84
+    pass_vision: 85
+    pass_iq: 95
+  defense:
+    block: 62
+    steal: 70
+    pass_perception: 88
+    interior_defense: 90
+    perimeter_defense: 87
+    help_defense_iq: 92
+    defensive_consistency: 95
+  rebounding:
+    defensive_rebound: 90
+    offensive_rebound: 80
+  url: https://www.2kratings.com/giannis-antetokounmpo
+- id: jokic
+  name: Nikola Jokic
+  team: Denver Nuggets
+  pos: C
+  overall: 97
+  height_in: 83
+  wingspan_in: 87
+  weight_lb: 284
+  outside_scoring:
+    three_point: 85
+    mid_range: 98
+    close_shot: 99
+    free_throw: 83
+    offensive_consistency: 98
+    shot_iq: 85
+  athleticism:
+    speed: 63
+    strength: 96
+    agility: 62
+    vertical: 63
+    hustle: 80
+    stamina: 97
+    overall_durability: 81
+  inside_scoring:
+    layup: 94
+    driving_dunk: 75
+    standing_dunk: 75
+    post_hook: 94
+    post_fade: 95
+    post_control: 98
+    draw_foul: 98
+    hands: 90
+  playmaking:
+    ball_handle: 76
+    speed_with_ball: 60
+    pass_accuracy: 93
+    pass_vision: 99
+    pass_iq: 98
+  defense:
+    block: 61
+    steal: 56
+    pass_perception: 82
+    interior_defense: 83
+    perimeter_defense: 61
+    help_defense_iq: 83
+    defensive_consistency: 80
+  rebounding:
+    defensive_rebound: 97
+    offensive_rebound: 73
+  url: https://www.2kratings.com/nikola-jokic
+- id: luka
+  name: Luka Doncic
+  team: Los Angeles Lakers
+  pos: PG
+  overall: 96
+  height_in: 80
+  wingspan_in: 83
+  weight_lb: 230
+  outside_scoring:
+    three_point: 92
+    mid_range: 94
+    close_shot: 98
+    free_throw: 78
+    offensive_consistency: 98
+    shot_iq: 88
+  athleticism:
+    speed: 84
+    strength: 72
+    agility: 77
+    vertical: 79
+    hustle: 98
+    stamina: 90
+    overall_durability: 84
+  inside_scoring:
+    layup: 97
+    driving_dunk: 75
+    standing_dunk: 65
+    post_hook: 85
+    post_fade: 85
+    post_control: 87
+    draw_foul: 98
+    hands: 98
+  playmaking:
+    ball_handle: 95
+    speed_with_ball: 83
+    pass_accuracy: 95
+    pass_vision: 95
+    pass_iq: 95
+  defense:
+    block: 53
+    steal: 66
+    pass_perception: 57
+    interior_defense: 58
+    perimeter_defense: 59
+    help_defense_iq: 60
+    defensive_consistency: 45
+  rebounding:
+    defensive_rebound: 82
+    offensive_rebound: 36
+  url: https://www.2kratings.com/luka-doncic
+- id: edwards
+  name: Anthony Edwards
+  team: Minnesota Timberwolves
+  pos: SG
+  overall: 95
+  height_in: 76
+  wingspan_in: 81
+  weight_lb: 225
+  outside_scoring:
+    three_point: 92
+    mid_range: 89
+    close_shot: 96
+    free_throw: 80
+    offensive_consistency: 98
+    shot_iq: 85
+  athleticism:
+    speed: 94
+    strength: 67
+    agility: 90
+    vertical: 97
+    hustle: 90
+    stamina: 97
+    overall_durability: 91
+  inside_scoring:
+    layup: 97
+    driving_dunk: 97
+    standing_dunk: 50
+    post_hook: 70
+    post_fade: 84
+    post_control: 84
+    draw_foul: 95
+    hands: 98
+  playmaking:
+    ball_handle: 92
+    speed_with_ball: 90
+    pass_accuracy: 79
+    pass_vision: 65
+    pass_iq: 80
+  defense:
+    block: 61
+    steal: 56
+    pass_perception: 84
+    interior_defense: 59
+    perimeter_defense: 85
+    help_defense_iq: 84
+    defensive_consistency: 85
+  rebounding:
+    defensive_rebound: 60
+    offensive_rebound: 34
+  url: https://www.2kratings.com/anthony-edwards
+- id: lebron
+  name: LeBron James
+  team: Philadelphia 76ers
+  pos: SF
+  overall: 91
+  height_in: 81
+  wingspan_in: 84
+  weight_lb: 250
+  outside_scoring:
+    three_point: 76
+    mid_range: 83
+    close_shot: 94
+    free_throw: 74
+    offensive_consistency: 80
+    shot_iq: 95
+  athleticism:
+    speed: 87
+    strength: 89
+    agility: 84
+    vertical: 89
+    hustle: 70
+    stamina: 88
+    overall_durability: 74
+  inside_scoring:
+    layup: 97
+    driving_dunk: 85
+    standing_dunk: 80
+    post_hook: 82
+    post_fade: 88
+    post_control: 84
+    draw_foul: 80
+    hands: 98
+  playmaking:
+    ball_handle: 84
+    speed_with_ball: 85
+    pass_accuracy: 90
+    pass_vision: 81
+    pass_iq: 97
+  defense:
+    block: 57
+    steal: 46
+    pass_perception: 70
+    interior_defense: 74
+    perimeter_defense: 74
+    help_defense_iq: 70
+    defensive_consistency: 60
+  rebounding:
+    defensive_rebound: 69
+    offensive_rebound: 38
+  url: https://www.2kratings.com/lebron-james
+- id: durant
+  name: Kevin Durant
+  team: Houston Rockets
+  pos: PF
+  overall: 93
+  height_in: 83
+  wingspan_in: 89
+  weight_lb: 240
+  outside_scoring:
+    three_point: 92
+    mid_range: 97
+    close_shot: 98
+    free_throw: 88
+    offensive_consistency: 95
+    shot_iq: 80
+  athleticism:
+    speed: 78
+    strength: 63
+    agility: 78
+    vertical: 77
+    hustle: 90
+    stamina: 94
+    overall_durability: 82
+  inside_scoring:
+    layup: 96
+    driving_dunk: 85
+    standing_dunk: 60
+    post_hook: 74
+    post_fade: 89
+    post_control: 86
+    draw_foul: 85
+    hands: 98
+  playmaking:
+    ball_handle: 92
+    speed_with_ball: 77
+    pass_accuracy: 78
+    pass_vision: 70
+    pass_iq: 88
+  defense:
+    block: 62
+    steal: 38
+    pass_perception: 75
+    interior_defense: 70
+    perimeter_defense: 77
+    help_defense_iq: 75
+    defensive_consistency: 75
+  rebounding:
+    defensive_rebound: 62
+    offensive_rebound: 33
+  url: https://www.2kratings.com/kevin-durant
+- id: gobert
+  name: Rudy Gobert
+  team: Minnesota Timberwolves
+  pos: C
+  overall: 84
+  height_in: 85
+  wingspan_in: 93
+  weight_lb: 258
+  outside_scoring:
+    three_point: 29
+    mid_range: 54
+    close_shot: 80
+    free_throw: 53
+    offensive_consistency: 40
+    shot_iq: 75
+  athleticism:
+    speed: 48
+    strength: 87
+    agility: 65
+    vertical: 57
+    hustle: 95
+    stamina: 90
+    overall_durability: 83
+  inside_scoring:
+    layup: 57
+    driving_dunk: 75
+    standing_dunk: 85
+    post_hook: 65
+    post_fade: 58
+    post_control: 65
+    draw_foul: 70
+    hands: 85
+  playmaking:
+    ball_handle: 35
+    speed_with_ball: 25
+    pass_accuracy: 68
+    pass_vision: 33
+    pass_iq: 58
+  defense:
+    block: 82
+    steal: 40
+    pass_perception: 74
+    interior_defense: 96
+    perimeter_defense: 64
+    help_defense_iq: 95
+    defensive_consistency: 95
+  rebounding:
+    defensive_rebound: 87
+    offensive_rebound: 90
+  url: https://www.2kratings.com/rudy-gobert
+- id: bam
+  name: Bam Adebayo
+  team: Miami Heat
+  pos: C
+  overall: 87
+  height_in: 81
+  wingspan_in: 87
+  weight_lb: 260
+  outside_scoring:
+    three_point: 77
+    mid_range: 79
+    close_shot: 87
+    free_throw: 78
+    offensive_consistency: 95
+    shot_iq: 70
+  athleticism:
+    speed: 74
+    strength: 89
+    agility: 84
+    vertical: 83
+    hustle: 90
+    stamina: 92
+    overall_durability: 86
+  inside_scoring:
+    layup: 83
+    driving_dunk: 80
+    standing_dunk: 85
+    post_hook: 80
+    post_fade: 82
+    post_control: 88
+    draw_foul: 60
+    hands: 90
+  playmaking:
+    ball_handle: 69
+    speed_with_ball: 66
+    pass_accuracy: 72
+    pass_vision: 53
+    pass_iq: 74
+  defense:
+    block: 57
+    steal: 49
+    pass_perception: 80
+    interior_defense: 95
+    perimeter_defense: 88
+    help_defense_iq: 94
+    defensive_consistency: 95
+  rebounding:
+    defensive_rebound: 87
+    offensive_rebound: 57
+  url: https://www.2kratings.com/bam-adebayo

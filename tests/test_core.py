@@ -6,12 +6,11 @@ from pettingzoo.test import parallel_api_test
 from pydantic import ValidationError
 
 from nbasim import court
-from nbasim.agents.scripted import ScriptedPolicy
-from nbasim.engine import N_OFF, Engine
-from nbasim.env import HalfCourtEnv
-from nbasim.players import Player, load_lineups, load_roster
-
-LEGAL_OUTCOMES = {"made_shot", "defensive_rebound", "turnover", "shot_clock_violation"}
+from nbasim.agents.team import TeamBrain
+from nbasim.engine import HELD, Engine, members, team_of
+from nbasim.env import NBAEnv
+from nbasim.game import play_game
+from nbasim.players import Lineup, Player, load_lineups, load_roster
 
 
 @pytest.fixture(scope="module")
@@ -34,16 +33,28 @@ def test_three_point_line(p, three):
 
 def test_shot_zones():
     assert court.shot_zone((25.0, 7.0)) == "rim"
-    assert court.shot_zone((20.0, 15.0)) == "paint"
-    assert court.shot_zone((10.0, 18.0)) == "mid"
+    assert court.shot_zone((20.0, 15.0)) == "short_mid"
+    assert court.shot_zone((10.0, 18.0)) == "long_mid"
     assert court.shot_zone((2.0, 3.0)) == "corner3"
     assert court.shot_zone((25.0, 32.0)) == "above3"
 
 
+@pytest.mark.parametrize("direction", [1, -1])
+def test_local_global_round_trip(direction):
+    pts = np.array([[3.0, 4.0], [25.0, 5.25], [40.0, 60.0]])
+    assert np.allclose(court.to_local(court.to_global(pts, direction), direction), pts)
+    # each direction attacks the basket at its own end of the court
+    assert np.allclose(court.basket(direction), court.to_global(court.BASKET_LOCAL, direction))
+    assert court.basket(1)[0] > court.LENGTH / 2 > court.basket(-1)[0]
+
+
 # ----------------------------------------------------------------- players
-def test_roster_loads_ten_players():
+def test_roster_is_2k27_real_players():
     roster = load_roster()
-    assert len(roster.players) == 10
+    ids = {p.id for p in roster.players}
+    assert {"curry", "jokic", "giannis", "luka", "gobert"} <= ids
+    for p in roster.players:
+        assert 60 <= p.overall <= 99
 
 
 def test_rating_out_of_range_rejected():
@@ -54,80 +65,112 @@ def test_rating_out_of_range_rejected():
 
 
 # ------------------------------------------------------------------ engine
-def _scripted_replay(lineups, seed):
-    env = HalfCourtEnv(lineups["mixed"], lineups["west"], record=True)
-    env.reset(seed=seed)
-    policy = ScriptedPolicy()
-    while env.agents:
-        env.step(policy(env.engine))
-    return env.replay()
+def _run(lineups, seed, seconds, manual=False):
+    eng = Engine(lineups["stars_a"].players, lineups["stars_b"].players, seed=seed, quarter_len=300)
+    brains = (TeamBrain(seed=seed * 2 + 1), TeamBrain(seed=seed * 2 + 2))
+    if manual:  # nobody decides to shoot, pass or drive
+        brains[0].manual, brains[1].manual = set(range(5)), set(range(5, 10))
+    frames = []
+    while not eng.done and eng.t < seconds:
+        eng.step(brains)
+        frames.append(eng.pos.copy())
+    return eng, frames
 
 
-def test_same_seed_same_replay(lineups):
-    a = json.dumps(_scripted_replay(lineups, 7))
-    b = json.dumps(_scripted_replay(lineups, 7))
-    assert a == b
+def test_same_seed_same_game(lineups):
+    a, fa = _run(lineups, 7, 60)
+    b, fb = _run(lineups, 7, 60)
+    assert a.score == b.score
+    assert json.dumps([e.to_dict() for e in a.events]) == json.dumps([e.to_dict() for e in b.events])
+    assert np.allclose(fa[-1], fb[-1])
 
 
 def test_no_overlapping_bodies(lineups):
-    rep = _scripted_replay(lineups, 3)
-    for f in rep["frames"]:
-        p = np.array(f["p"])
-        d = np.linalg.norm(p[:, None] - p[None], axis=2)
-        np.fill_diagonal(d, np.inf)
-        assert d.min() > 2 * court.PLAYER_RADIUS - 0.6
+    _, frames = _run(lineups, 3, 90)
+    worst = min(
+        np.min(np.linalg.norm(p[:, None] - p[None], axis=2) + np.eye(10) * 99) for p in frames)
+    assert worst > 2 * court.PLAYER_RADIUS - 0.8
+
+
+def test_players_stay_in_bounds(lineups):
+    _, frames = _run(lineups, 4, 90)
+    allp = np.concatenate(frames)
+    assert allp[:, 0].min() > -4 and allp[:, 0].max() < court.LENGTH + 4
+    assert allp[:, 1].min() > -4 and allp[:, 1].max() < court.WIDTH + 4
 
 
 def test_shot_clock_violation_when_nobody_shoots(lineups):
-    eng = Engine(lineups["mixed"].players, lineups["west"].players, seed=0)
-    eng.place(np.array([[25, 31]] * 5 + [[25, 26]] * 5, dtype=float) + np.arange(10)[:, None] * 2.5)
-    while not eng.done:
-        eng.step()
-    assert eng.outcome == "shot_clock_violation"
-    assert eng.t == pytest.approx(24.0, abs=0.11)
+    eng, _ = _run(lineups, 1, 60, manual=True)
+    viol = [e for e in eng.events if e.type == "violation"]
+    assert viol and viol[0].data["rule"] == "shot_clock"
+    # possession started at the jump ball; 24 s plus the tip
+    assert 24.0 <= viol[0].t <= 27.0
+    tov = [e for e in eng.events if e.type == "turnover"]
+    assert tov[0].data["kind"] == "shot_clock"
 
 
-def test_three_counts_three(lineups):
-    eng = Engine(lineups["mixed"].players, lineups["west"].players, seed=1)
-    pos = np.array([[25, 32], [45, 20], [5, 20], [3, 3], [32, 7],
-                    [25, 47], [45, 46], [5, 46], [10, 46], [40, 46]], dtype=float)
-    for seed in range(50):
-        eng = Engine(lineups["mixed"].players, lineups["west"].players, seed=seed)
-        eng.place(pos, holder=0)
-        eng.request_shot(0)
-        while eng.flight is not None:
-            eng.step()
-        if eng.outcome == "made_shot":
-            assert eng.points == 3
-            return
-    pytest.fail("Curry missed 50 open threes")
+class _StayBack(TeamBrain):
+    """Offense that never crosses half court."""
+
+    def act(self, eng, team):
+        super().act(eng, team)
+        if eng.off == team and eng.status == HELD and team_of(eng.holder) == team:
+            eng.set_target(eng.holder, eng.glob(np.array([25.0, 70.0]), team))
 
 
-def test_contest_lowers_make_probability(lineups):
-    eng = Engine(lineups["mixed"].players, lineups["west"].players, seed=0)
-    far = np.array([[25, 32]] + [[45, 20], [5, 20], [3, 3], [32, 7]]
-                   + [[25, 46], [45, 46], [5, 46], [10, 46], [40, 46]], dtype=float)
-    eng.place(far)
-    open_p, _, _ = eng.shot_make_prob(0)
-    close = far.copy()
-    close[N_OFF] = [25, 29.6]
-    eng.place(close)
-    contested_p, _, _ = eng.shot_make_prob(0)
-    assert contested_p < open_p
+def test_eight_second_violation(lineups):
+    eng = Engine(lineups["stars_a"].players, lineups["stars_b"].players, seed=0, quarter_len=300)
+    brains = (_StayBack(seed=1), _StayBack(seed=2))
+    for b, t in zip(brains, (0, 1)):
+        b.manual = set(members(t))
+    while not eng.done and eng.t < 40:
+        eng.step(brains)
+    rules = [e.data["rule"] for e in eng.events if e.type == "violation"]
+    assert "eight_seconds" in rules
+
+
+def test_points_add_up(lineups):
+    eng = play_game(lineups["stars_a"], lineups["stars_b"], seed=5, quarters=1).engine
+    assert eng.score[0] == int(eng.stats["pts"][:5].sum())
+    assert eng.score[1] == int(eng.stats["pts"][5:].sum())
+    s = eng.stats
+    assert (s["pts"] == 2 * s["fgm"] + s["fg3m"] + s["ftm"]).all()
+    assert (s["fgm"] <= s["fga"]).all() and (s["fg3m"] <= s["fg3a"]).all() and (s["ftm"] <= s["fta"]).all()
+    # a quarter between two teams looks like an NBA quarter
+    assert 15 <= eng.score[0] <= 50 and 15 <= eng.score[1] <= 50
+    assert 18 <= eng.possessions[0] <= 32
+
+
+def test_stars_beat_average(lineups):
+    avg = load_roster("data/players/calibration.yaml").players
+    margin = 0
+    for seed in range(3):
+        eng = play_game(lineups["stars_a"], Lineup(name="avg", players=avg), seed=seed, quarters=1).engine
+        margin += eng.score[0] - eng.score[1]
+    assert margin > 0
 
 
 # --------------------------------------------------------------------- env
 def test_pettingzoo_parallel_api(lineups):
-    parallel_api_test(HalfCourtEnv(lineups["mixed"], lineups["west"]), num_cycles=200)
+    env = NBAEnv(lineups["stars_a"], lineups["stars_b"], quarter_len=60)
+    parallel_api_test(env, num_cycles=300)
 
 
-def test_random_masked_policy_always_ends_legally(lineups):
-    env = HalfCourtEnv(lineups["west"], lineups["mixed"])
+def test_random_masked_policy_zero_sum(lineups):
+    env = NBAEnv(lineups["stars_a"], lineups["stars_b"], quarter_len=60)
     rng = np.random.default_rng(0)
-    for seed in range(200):
-        obs, _ = env.reset(seed=seed)
-        while env.agents:
-            acts = {a: int(rng.choice(np.flatnonzero(o["action_mask"]))) for a, o in obs.items()}
-            obs, rew, *_ , infos = env.step(acts)
-        assert env.engine.outcome in LEGAL_OUTCOMES
-        assert sum(rew.values()) == 0  # zero-sum between the two teams
+    obs, _ = env.reset(seed=0)
+    total = {a: 0.0 for a in env.agents}
+    while env.agents:
+        acts = {a: int(rng.choice(np.flatnonzero(o["action_mask"]))) for a, o in obs.items()}
+        obs, rew, *_ = env.step(acts)
+        for a, r in rew.items():
+            total[a] += r
+    s = env.engine.score
+    assert total["a_0"] == s[0] - s[1] == -total["b_3"]
+
+
+def test_scripted_team_not_exposed(lineups):
+    env = NBAEnv(lineups["stars_a"], lineups["stars_b"], quarter_len=60, scripted=(1,))
+    obs, _ = env.reset(seed=1)
+    assert set(obs) == {f"a_{k}" for k in range(5)}

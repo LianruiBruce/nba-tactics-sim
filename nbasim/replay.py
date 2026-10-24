@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from .engine import DT, N_OFF, Engine
+from .engine import DT, Engine
 
 
 def _r(x: float) -> float:
@@ -13,16 +13,16 @@ def _r(x: float) -> float:
 
 
 class Recorder:
-    def __init__(self, eng: Engine, offense_name: str, defense_name: str, seed: int | None):
+    def __init__(self, eng: Engine, name_a: str, name_b: str, seed: int | None):
         self.eng = eng
         self.meta = {
             "seed": seed,
             "dt": DT,
-            "offense": offense_name,
-            "defense": defense_name,
+            "court": "full",
+            "teams": [name_a, name_b],
             "players": [
-                {"idx": i, "id": p.id, "name": p.name, "pos": p.pos,
-                 "team": "offense" if i < N_OFF else "defense"}
+                {"idx": i, "id": p.id, "name": p.name, "pos": p.pos, "team": 0 if i < 5 else 1,
+                 "overall": p.overall}
                 for i, p in enumerate(eng.players)
             ],
         }
@@ -33,26 +33,30 @@ class Recorder:
         e = self.eng
         self.frames.append({
             "t": _r(e.t),
+            "q": e.quarter,
             "gc": _r(e.game_clock),
             "sc": _r(e.shot_clock),
-            "ball": [_r(e.ball[0]), _r(e.ball[1]), _r(e.ball_height())],
-            "holder": e.holder,
+            "s": list(e.score),
+            "off": e.off,
+            "st": e.status,
+            "ball": [_r(e.ball[0]), _r(e.ball[1]), _r(e.ball_z)],
+            "h": e.holder,
             "p": [[_r(x), _r(y)] for x, y in e.pos],
+            "lab": [e.labels[0], e.labels[1]],
         })
 
     def to_dict(self) -> dict:
         e = self.eng
         return {
             "meta": self.meta,
-            "outcome": e.outcome,
-            "points": e.points,
+            "score": list(e.score),
             "frames": self.frames,
             "events": [ev.to_dict() for ev in e.events],
+            "box": {k: v.tolist() for k, v in e.stats.items()},
         }
 
 
-def save(possessions: list[dict], path: str | Path) -> None:
+def save(replay: dict, path: str | Path) -> None:
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
-        json.dump({"version": 1, "possessions": possessions}, f, ensure_ascii=False,
-                  separators=(",", ":"))
+        json.dump({"version": 2, **replay}, f, ensure_ascii=False, separators=(",", ":"))

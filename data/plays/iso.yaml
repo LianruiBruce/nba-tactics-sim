@@ -1,0 +1,23 @@
+name: iso
+label: 拉开单打
+roles:
+  ball: scorer
+  big: [C, PF]
+  a: [SG, SF, PG]
+  b: [SF, PF, SG]
+  c: [PF, SF, SG, PG]
+phases:
+  - id: clear
+    max_time: 3.0
+    until: in_place
+    pass_to: ball
+    roles:
+      ball: {to: right_wing}
+      big: {to: left_short_corner}
+      a: {to: left_corner}
+      b: {to: left_slot}
+      c: {to: right_corner}
+  - id: attack
+    max_time: 5.0
+    roles:
+      ball: {iso: true}

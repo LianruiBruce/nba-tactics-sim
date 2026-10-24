@@ -1,7 +1,7 @@
 # Hypothetical lineups for testing; order is PG, SG, SF, PF, C.
-west:
-  name: West Stars
-  players: [sga, edwards, lebron, durant, wembanyama]
-mixed:
-  name: Mixed Stars
+stars_a:
+  name: Team Curry
   players: [curry, booker, tatum, giannis, jokic]
+stars_b:
+  name: Team Luka
+  players: [luka, edwards, lebron, durant, gobert]
