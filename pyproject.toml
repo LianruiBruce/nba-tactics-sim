@@ -1,0 +1,25 @@
+[project]
+name = "nba-tactics-sim"
+version = "0.0.1"
+description = "Multi-agent NBA tactics simulator and RL environment"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26",
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
+    "gymnasium>=1.0",
+    "pettingzoo>=1.24",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["nbasim*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
