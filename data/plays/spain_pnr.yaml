@@ -1,0 +1,35 @@
+name: spain_pnr
+label: 西班牙挡拆
+roles:
+  ball: handler
+  screener: [C, PF]
+  back_screener: shooter
+  corner_l: [SF, PF, SG]
+  corner_r: [PF, SF, SG]
+phases:
+  - id: setup
+    max_time: 2.5
+    until: in_place
+    roles:
+      ball: {to: top}
+      screener: {to: free_throw}
+      back_screener: {to: left_slot}
+      corner_l: {to: left_corner}
+      corner_r: {to: right_corner}
+  - id: screen
+    max_time: 1.5
+    until: screen_set
+    roles:
+      ball: {hold: true}
+      screener: {screen: ball, side: right}
+  - id: use
+    max_time: 2.0
+    roles:
+      ball: {drive: right_elbow}
+      screener: {roll: rim}
+      back_screener: {screen: screener, side: in}
+  - id: pop
+    max_time: 3.0
+    roles:
+      screener: {roll: rim}
+      back_screener: {to: top}

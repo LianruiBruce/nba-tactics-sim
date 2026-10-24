@@ -1,0 +1,28 @@
+name: post_up
+label: 低位单打
+roles:
+  post: post
+  entry: [SG, SF, PG]
+  ball: handler
+  weak_corner: [SF, SG, PF]
+  weak_wing: [PF, SG, SF, C]
+phases:
+  - id: setup
+    max_time: 3.0
+    until: in_place
+    roles:
+      post: {to: left_block}
+      ball: {to: left_wing}
+      entry: {to: right_slot}
+      weak_corner: {to: right_corner}
+      weak_wing: {to: right_wing}
+  - id: entry
+    max_time: 2.0
+    pass_to: post
+    roles:
+      post: {to: left_block}
+  - id: work
+    max_time: 4.0
+    roles:
+      post: {post_up: true}
+      ball: {to: left_corner}

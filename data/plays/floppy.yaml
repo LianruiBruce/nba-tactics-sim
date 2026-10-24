@@ -1,0 +1,31 @@
+name: floppy
+label: 弹簧（Floppy）
+roles:
+  ball: handler
+  shooter: shooter
+  screener_l: [C, PF]
+  screener_r: [PF, SF, C]
+  safety: [SF, SG, PF]
+phases:
+  - id: setup
+    max_time: 3.0
+    until: in_place
+    roles:
+      ball: {to: top}
+      shooter: {to: rim}
+      screener_l: {to: left_block}
+      screener_r: {to: right_block}
+      safety: {to: left_wing}
+  - id: curl
+    max_time: 2.0
+    roles:
+      ball: {hold: true}
+      screener_r: {screen: shooter, side: out}
+      shooter: {to: right_wing}
+  - id: catch
+    max_time: 2.5
+    pass_to: shooter
+    roles:
+      shooter: {to: right_wing}
+      screener_r: {roll: right_block}
+      screener_l: {to: left_short_corner}

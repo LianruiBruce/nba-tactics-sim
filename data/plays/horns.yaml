@@ -1,0 +1,35 @@
+name: horns
+label: 牛角
+roles:
+  ball: handler
+  big_r: [C, PF]
+  big_l: [PF, SF, C]
+  corner_l: [SG, SF]
+  corner_r: [SF, SG]
+phases:
+  - id: setup
+    max_time: 3.0
+    until: in_place
+    roles:
+      ball: {to: top}
+      big_r: {to: right_elbow}
+      big_l: {to: left_elbow}
+      corner_l: {to: left_corner}
+      corner_r: {to: right_corner}
+  - id: screen
+    max_time: 1.5
+    until: screen_set
+    roles:
+      ball: {hold: true}
+      big_r: {screen: ball, side: right}
+      big_l: {to: left_slot}
+  - id: use
+    max_time: 2.0
+    roles:
+      ball: {drive: right_elbow}
+      big_r: {roll: rim, pop: right_wing}
+      big_l: {to: top}
+  - id: read
+    max_time: 3.0
+    roles:
+      big_r: {roll: rim, pop: right_wing}

@@ -1,0 +1,49 @@
+# League-wide targets the engine is calibrated against.
+season: 2024-25 regular season
+sources:
+  per_game: https://www.basketball-reference.com/leagues/NBA_2025.html (League Average row)
+  shot_locations: https://cleaningtheglass.com/stats/league/shots (league "Average" row, heaves excluded)
+
+per_game:
+  fga: 89.2
+  fg_pct: 0.467
+  fg3a: 37.6
+  fg3_pct: 0.360
+  fta: 21.7
+  ft_pct: 0.780
+  orb: 11.1
+  drb: 33.0
+  ast: 26.5
+  stl: 8.2
+  blk: 4.9
+  tov: 14.3
+  pf: 18.6
+  pts: 113.8
+
+# Derived from per_game: poss ~= FGA - ORB + TOV + 0.44*FTA = 101.9
+derived:
+  points_per_possession: 1.12
+  tov_pct: 0.140        # TOV / possessions
+  orb_pct: 0.252        # ORB / (ORB + opponent DRB)
+  ft_rate: 0.243        # FTA / FGA
+  stl_share_of_tov: 0.57
+  blk_pct_of_fga: 0.055
+  ast_pct_of_fgm: 0.635
+
+# Cleaning the Glass location splits: share of FGA and FG%.
+shot_locations:
+  rim:       {freq: 0.312, fg_pct: 0.663}   # within 4 ft
+  short_mid: {freq: 0.225, fg_pct: 0.442}   # 4-14 ft
+  long_mid:  {freq: 0.075, fg_pct: 0.417}   # 14 ft to the 3pt line
+  corner3:   {freq: 0.102, fg_pct: 0.389}
+  above3:    {freq: 0.286, fg_pct: 0.356}
+
+# Approximate player-tracking targets used by scripts/tune.py (NBA.com tracking,
+# league averages; pace 99.6 from NBA.com). Definitions differ a little from
+# the simulator's event counts, so the tuner uses wide tolerances.
+tracking:
+  pace: 99.6
+  passes_per_possession: 2.8
+  drives_per_team_game: 50
+  drives_ending_in_foul: 0.072   # NBA.com, 2024-25
+  top_option_fga_share: 0.29

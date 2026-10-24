@@ -1,0 +1,35 @@
+name: high_pnr
+label: 高位挡拆
+# roles are filled from the lineup by these preferences (lineup slot names)
+roles:
+  ball: handler
+  screener: [C, PF]
+  wing: [SF, SG, PF]
+  corner_l: [SG, SF, PF]
+  corner_r: [SF, SG, PF]
+phases:
+  - id: setup
+    max_time: 2.5
+    until: in_place
+    roles:
+      ball: {to: top}
+      screener: {to: free_throw}
+      wing: {to: left_wing}
+      corner_l: {to: left_corner}
+      corner_r: {to: right_corner}
+  - id: screen
+    max_time: 1.5
+    until: screen_set
+    roles:
+      ball: {hold: true}
+      screener: {screen: ball, side: right}
+  - id: use
+    max_time: 2.0
+    roles:
+      ball: {drive: right_elbow}
+      screener: {roll: rim, pop: right_slot}
+  - id: read
+    max_time: 3.0
+    roles:
+      screener: {roll: rim, pop: right_slot}
+      corner_r: {to: right_corner}

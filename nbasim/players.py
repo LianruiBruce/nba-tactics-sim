@@ -1,4 +1,4 @@
-"""Player model using NBA 2K attribute groups (ratings 25-99)."""
+"""Player model using NBA 2K27 attribute groups (ratings 25-99)."""
 
 from __future__ import annotations
 
@@ -15,58 +15,68 @@ class _Group(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class InsideScoring(_Group):
-    close_shot: Rating
-    driving_layup: Rating
-    driving_dunk: Rating
-    standing_dunk: Rating
-    post_control: Rating
-
-
 class OutsideScoring(_Group):
-    mid_range: Rating
     three_point: Rating
+    mid_range: Rating
+    close_shot: Rating
     free_throw: Rating
-    shot_iq: Rating
     offensive_consistency: Rating
-
-
-class Playmaking(_Group):
-    pass_accuracy: Rating
-    ball_handle: Rating
-    speed_with_ball: Rating
-    pass_iq: Rating
-    pass_vision: Rating
-
-
-class Defense(_Group):
-    interior_defense: Rating
-    perimeter_defense: Rating
-    steal: Rating
-    block: Rating
-    help_defense_iq: Rating
-    pass_perception: Rating
-    defensive_consistency: Rating
-
-
-class Rebounding(_Group):
-    offensive_rebound: Rating
-    defensive_rebound: Rating
+    shot_iq: Rating
 
 
 class Athleticism(_Group):
     speed: Rating
-    acceleration: Rating
     strength: Rating
+    agility: Rating
     vertical: Rating
-    stamina: Rating
     hustle: Rating
+    stamina: Rating
+    overall_durability: Rating
+
+
+class InsideScoring(_Group):
+    layup: Rating
+    driving_dunk: Rating
+    standing_dunk: Rating
+    post_hook: Rating
+    post_fade: Rating
+    post_control: Rating
+    draw_foul: Rating
+    hands: Rating
+
+
+class Playmaking(_Group):
+    ball_handle: Rating
+    speed_with_ball: Rating
+    pass_accuracy: Rating
+    pass_vision: Rating
+    pass_iq: Rating
+
+
+class Defense(_Group):
+    block: Rating
+    steal: Rating
+    pass_perception: Rating
+    interior_defense: Rating
+    perimeter_defense: Rating
+    help_defense_iq: Rating
+    defensive_consistency: Rating
+
+
+class Rebounding(_Group):
+    defensive_rebound: Rating
+    offensive_rebound: Rating
 
 
 class Player(_Group):
+    """NBA 2K27 attribute set as listed on 2kratings.com."""
+
     id: str
     name: str
+    team: str
     pos: str
+    overall: int
+    url: str
     height_in: int
     wingspan_in: int
     weight_lb: int
@@ -94,7 +104,7 @@ class Lineup(BaseModel):
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 
-def load_roster(path: str | Path = DATA_DIR / "players" / "nba2k26.yaml") -> Roster:
+def load_roster(path: str | Path = DATA_DIR / "players" / "nba2k27.yaml") -> Roster:
     with open(path, encoding="utf-8") as f:
         return Roster.model_validate(yaml.safe_load(f))
 

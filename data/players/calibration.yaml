@@ -1,0 +1,80 @@
+# Synthetic league-average players, used only to calibrate the engine against
+# league-wide numbers. Every skill sits near the REF rating (70) in
+# nbasim/resolve.py, with position-typical size and skill mix.
+source: "Synthetic league-average rotation players (calibration only, not real people)"
+players:
+  - id: avg_pg
+    name: Average PG
+    team: Calibration
+    pos: PG
+    overall: 76
+    url: ""
+    height_in: 75
+    wingspan_in: 78
+    weight_lb: 195
+    outside_scoring: {three_point: 72, mid_range: 70, close_shot: 70, free_throw: 83, offensive_consistency: 70, shot_iq: 70}
+    athleticism: {speed: 80, strength: 50, agility: 80, vertical: 70, hustle: 70, stamina: 85, overall_durability: 80}
+    inside_scoring: {layup: 74, driving_dunk: 50, standing_dunk: 30, post_hook: 40, post_fade: 50, post_control: 45, draw_foul: 65, hands: 80}
+    playmaking: {ball_handle: 80, speed_with_ball: 78, pass_accuracy: 78, pass_vision: 75, pass_iq: 75}
+    defense: {block: 40, steal: 62, pass_perception: 68, interior_defense: 45, perimeter_defense: 70, help_defense_iq: 65, defensive_consistency: 68}
+    rebounding: {defensive_rebound: 50, offensive_rebound: 35}
+  - id: avg_sg
+    name: Average SG
+    team: Calibration
+    pos: SG
+    overall: 76
+    url: ""
+    height_in: 77
+    wingspan_in: 80
+    weight_lb: 205
+    outside_scoring: {three_point: 74, mid_range: 70, close_shot: 68, free_throw: 82, offensive_consistency: 70, shot_iq: 68}
+    athleticism: {speed: 78, strength: 55, agility: 76, vertical: 72, hustle: 72, stamina: 85, overall_durability: 80}
+    inside_scoring: {layup: 72, driving_dunk: 62, standing_dunk: 35, post_hook: 45, post_fade: 55, post_control: 50, draw_foul: 60, hands: 80}
+    playmaking: {ball_handle: 74, speed_with_ball: 74, pass_accuracy: 70, pass_vision: 65, pass_iq: 68}
+    defense: {block: 42, steal: 60, pass_perception: 66, interior_defense: 48, perimeter_defense: 72, help_defense_iq: 66, defensive_consistency: 68}
+    rebounding: {defensive_rebound: 55, offensive_rebound: 38}
+  - id: avg_sf
+    name: Average SF
+    team: Calibration
+    pos: SF
+    overall: 76
+    url: ""
+    height_in: 79
+    wingspan_in: 83
+    weight_lb: 220
+    outside_scoring: {three_point: 72, mid_range: 69, close_shot: 70, free_throw: 80, offensive_consistency: 70, shot_iq: 68}
+    athleticism: {speed: 74, strength: 62, agility: 72, vertical: 72, hustle: 72, stamina: 85, overall_durability: 80}
+    inside_scoring: {layup: 72, driving_dunk: 68, standing_dunk: 50, post_hook: 50, post_fade: 58, post_control: 58, draw_foul: 60, hands: 80}
+    playmaking: {ball_handle: 68, speed_with_ball: 68, pass_accuracy: 68, pass_vision: 62, pass_iq: 66}
+    defense: {block: 50, steal: 58, pass_perception: 64, interior_defense: 60, perimeter_defense: 72, help_defense_iq: 68, defensive_consistency: 70}
+    rebounding: {defensive_rebound: 65, offensive_rebound: 45}
+  - id: avg_pf
+    name: Average PF
+    team: Calibration
+    pos: PF
+    overall: 76
+    url: ""
+    height_in: 81
+    wingspan_in: 85
+    weight_lb: 235
+    outside_scoring: {three_point: 66, mid_range: 66, close_shot: 72, free_throw: 77, offensive_consistency: 70, shot_iq: 68}
+    athleticism: {speed: 68, strength: 72, agility: 66, vertical: 70, hustle: 72, stamina: 82, overall_durability: 80}
+    inside_scoring: {layup: 70, driving_dunk: 70, standing_dunk: 68, post_hook: 60, post_fade: 60, post_control: 64, draw_foul: 60, hands: 80}
+    playmaking: {ball_handle: 58, speed_with_ball: 58, pass_accuracy: 64, pass_vision: 58, pass_iq: 64}
+    defense: {block: 62, steal: 52, pass_perception: 60, interior_defense: 70, perimeter_defense: 64, help_defense_iq: 70, defensive_consistency: 70}
+    rebounding: {defensive_rebound: 75, offensive_rebound: 60}
+  - id: avg_c
+    name: Average C
+    team: Calibration
+    pos: C
+    overall: 76
+    url: ""
+    height_in: 83
+    wingspan_in: 88
+    weight_lb: 250
+    outside_scoring: {three_point: 50, mid_range: 58, close_shot: 75, free_throw: 71, offensive_consistency: 68, shot_iq: 66}
+    athleticism: {speed: 60, strength: 82, agility: 60, vertical: 68, hustle: 75, stamina: 80, overall_durability: 80}
+    inside_scoring: {layup: 68, driving_dunk: 72, standing_dunk: 80, post_hook: 66, post_fade: 55, post_control: 66, draw_foul: 62, hands: 82}
+    playmaking: {ball_handle: 48, speed_with_ball: 45, pass_accuracy: 62, pass_vision: 55, pass_iq: 62}
+    defense: {block: 72, steal: 45, pass_perception: 60, interior_defense: 78, perimeter_defense: 55, help_defense_iq: 72, defensive_consistency: 72}
+    rebounding: {defensive_rebound: 82, offensive_rebound: 72}

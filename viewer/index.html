@@ -3,239 +3,280 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>回合回放</title>
+<title>比赛回放</title>
 <style>
 :root{
-  --bg:#f4f6f3; --panel:#ffffff; --ink:#1c2733; --muted:#5d6b78; --line:#d5dbd6;
-  --off:#1f5fbf; --def:#c4372c; --floor:#efe6d6; --paint:#e6d6bb; --ball:#e07a1f;
+  --bg:#f3f5f2; --panel:#ffffff; --ink:#1c2733; --muted:#5d6b78; --line:#d5dbd6;
+  --a:#1f5fbf; --b:#c4372c; --floor:#efe4d0; --paint:#e3d0ad; --ball:#e07a1f; --hi:#fff4c2;
   --mono:ui-monospace,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#161c1a; --panel:#1e2623; --ink:#e6ebe5; --muted:#9aa8a1; --line:#33403b;
-  --off:#6ea3ff; --def:#ff7a6b; --floor:#2a2620; --paint:#3a3226; --ball:#ff9a3c; color-scheme:dark}}
+  --a:#6ea3ff; --b:#ff7a6b; --floor:#2b2620; --paint:#3b3226; --ball:#ff9a3c; --hi:#3a3518; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#161c1a; --panel:#1e2623; --ink:#e6ebe5; --muted:#9aa8a1; --line:#33403b;
-  --off:#6ea3ff; --def:#ff7a6b; --floor:#2a2620; --paint:#3a3226; --ball:#ff9a3c; color-scheme:dark}
+  --a:#6ea3ff; --b:#ff7a6b; --floor:#2b2620; --paint:#3b3226; --ball:#ff9a3c; --hi:#3a3518; color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
-.wrap{max-width:1080px;margin:0 auto;padding-block:20px 40px;
+.wrap{max-width:1240px;margin:0 auto;padding-block:16px 40px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-header{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:baseline;margin-bottom:12px}
-h1{font-size:20px;margin:0}
+header{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-bottom:10px}
+h1{font-size:19px;margin:0}
 .hint{color:var(--muted);font-size:13px}
-.main{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px}
-@media (max-width:820px){.main{grid-template-columns:1fr}}
+.board{display:flex;flex-wrap:wrap;align-items:center;gap:6px 22px;background:var(--panel);border:1px solid var(--line);
+  border-radius:6px;padding:8px 14px;margin-bottom:10px;font-variant-numeric:tabular-nums}
+.team{display:flex;align-items:baseline;gap:8px;min-width:0}
+.team b{font-size:26px;font-family:var(--mono)}
+.team .nm{font-weight:600}
+.team.a{color:var(--a)} .team.b{color:var(--b)}
+.poss::after{content:" ●";color:var(--ball)}
+.clk{font-family:var(--mono);font-size:15px}
+.clk b{font-size:20px}
+.sc{color:var(--b)}
+.lab{font-size:13px;color:var(--muted)}
+.lab span{color:var(--ink);font-weight:600}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px}
+@media (max-width:900px){.main{grid-template-columns:1fr}}
 .stage{min-width:0}
+.cv-wrap{overflow-x:auto}
 canvas{width:100%;height:auto;display:block;border-radius:6px;background:var(--floor)}
-.hud{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:var(--mono);font-size:13px;margin:10px 0 6px}
-.hud b{font-size:18px}
-.sc{color:var(--def)}
-.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
 button,select{font:inherit;padding:5px 12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:5px;cursor:pointer}
-button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--off);outline-offset:2px}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--a);outline-offset:2px}
 input[type=range]{flex:1;min-width:160px}
-aside{min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;max-height:620px;overflow:auto}
-aside h2{font-size:14px;margin:0 0 8px}
-.ev{display:grid;grid-template-columns:44px 1fr;gap:6px;padding:3px 0;color:var(--muted);font-size:13px;cursor:pointer}
+aside{min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px;max-height:640px;overflow:auto}
+aside h2{font-size:14px;margin:0 0 6px}
+.ev{display:grid;grid-template-columns:52px 1fr;gap:6px;padding:2px 0;color:var(--muted);font-size:12.5px;cursor:pointer}
 .ev .t{font-family:var(--mono)}
 .ev.past{color:var(--ink)}
-.ev.now{font-weight:600}
-.roster{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;font-size:12px;margin-top:12px}
-.roster .o{color:var(--off)} .roster .d{color:var(--def)}
-.outcome{margin-top:6px;font-weight:600}
+.ev.now{background:var(--hi)}
+.ev.ta .d{border-left:3px solid var(--a);padding-left:6px}
+.ev.tb .d{border-left:3px solid var(--b);padding-left:6px}
+.box{margin-top:14px;overflow-x:auto}
+table{border-collapse:collapse;font-size:12.5px;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:4px 7px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:600}
+tr.ha td{color:var(--a);font-weight:600} tr.hb td{color:var(--b);font-weight:600}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>回合回放</h1>
+    <h1>比赛回放</h1>
     <span class="hint" id="src">读取 replays/sample.json，或选择本地回放文件</span>
-    <input type="file" id="file" accept=".json,application/json">
+    <input type="file" id="file" accept=".json,application/json" aria-label="选择回放文件">
   </header>
+  <div class="board">
+    <div class="team a" id="ta"><span class="nm" id="na">A</span><b id="sa">0</b></div>
+    <div class="team b" id="tb"><span class="nm" id="nb">B</span><b id="sb">0</b></div>
+    <div class="clk">第 <b id="q">1</b> 节 <b id="gc">12:00</b></div>
+    <div class="clk">进攻时间 <b class="sc" id="sc">24</b></div>
+    <div class="lab">A：<span id="la"></span></div>
+    <div class="lab">B：<span id="lb"></span></div>
+  </div>
   <div class="main">
     <div class="stage">
-      <canvas id="cv" width="1000" height="940" aria-label="半场俯视回放"></canvas>
-      <div class="hud">
-        <span id="teams"></span>
-        <span>24 秒 <b class="sc" id="shot">24.0</b></span>
-        <span>时间 <b id="gclock">12:00</b></span>
-        <span>t=<span id="tt">0.0</span>s</span>
-      </div>
+      <div class="cv-wrap"><canvas id="cv" width="1880" height="1000" aria-label="全场俯视回放"></canvas></div>
       <div class="controls">
-        <select id="poss" aria-label="选择回合"></select>
         <button id="play">播放</button>
         <select id="speed" aria-label="播放速度">
-          <option value="0.5">0.5×</option><option value="1" selected>1×</option>
-          <option value="2">2×</option><option value="4">4×</option>
+          <option value="1">1×</option><option value="2" selected>2×</option>
+          <option value="4">4×</option><option value="8">8×</option>
         </select>
-        <input type="range" id="seek" min="0" max="0" step="0.01" value="0" aria-label="时间轴">
+        <button id="prev" title="上一个回合">◀ 回合</button>
+        <button id="next" title="下一个回合">回合 ▶</button>
+        <input type="range" id="seek" min="0" max="0" step="0.1" value="0" aria-label="时间轴">
       </div>
+      <div class="box" id="box"></div>
     </div>
     <aside>
-      <h2>事件</h2>
+      <h2>比赛事件</h2>
       <div id="events"></div>
-      <div class="outcome" id="outcome"></div>
-      <div class="roster" id="roster"></div>
     </aside>
   </div>
 </div>
 <script>
 (function(){
-  const S = 20;                 // canvas px per foot
-  const W = 50, H = 47;
+  const S = 20, L = 94, W = 50;
   const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
   const $ = id => document.getElementById(id);
-  let data = null, poss = null, t = 0, playing = false, last = null;
-
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-  const OUTCOME = {made_shot:'投篮命中', defensive_rebound:'防守篮板', turnover:'失误',
-                   shot_clock_violation:'24 秒违例', end_of_period:'节末'};
-  const ZONE = {rim:'篮下', paint:'禁区', mid:'中距离', corner3:'底角三分', above3:'弧顶/45°三分'};
+  let R = null, t = 0, playing = false, last = null, rows = [];
 
-  function nameOf(i){ const p = poss.meta.players[i]; return p ? p.name.split(' ').slice(-1)[0] : '?'; }
+  const ZONE = {rim:'篮下', short_mid:'近距离', long_mid:'中距离', corner3:'底角三分', above3:'三分'};
+  const TOV = {bad_pass_steal:'传球被断', bad_pass_oob:'传球出界', lost_ball:'被掏球', offensive_foul:'进攻犯规',
+    traveling:'走步', backcourt:'回场', eight_seconds:'8 秒违例', shot_clock:'24 秒违例', five_seconds:'5 秒违例',
+    offensive_three_seconds:'进攻三秒'};
+  const nm = i => { const p = R.meta.players[i]; return p ? p.name.split(' ').slice(-1)[0] : '?'; };
+  const teamOf = i => i < 5 ? 0 : 1;
+
   function describe(e){
     switch(e.type){
-      case 'pass': return `${nameOf(e.by)} 传球给 ${nameOf(e.to)}`;
-      case 'catch': return `${nameOf(e.by)} 接球`;
-      case 'shot': return `${nameOf(e.by)} ${ZONE[e.zone]||e.zone}出手（命中率 ${(e.p*100).toFixed(0)}%）`;
-      case 'score': return `命中 +${e.pts}`;
-      case 'miss': return `${nameOf(e.by)} 投篮不中`;
-      case 'rebound': return `${nameOf(e.by)} ${e.offensive?'进攻':'防守'}篮板`;
-      case 'steal': return `${nameOf(e.by)} 抢断`;
-      case 'violation': return '24 秒违例';
-      case 'end': return `回合结束：${OUTCOME[e.outcome]||e.outcome}，${e.points} 分`;
-      default: return e.type;
+      case 'jump_ball': return `跳球，${R.meta.teams[e.won]} 获得球权`;
+      case 'period_start': return `第 ${e.quarter} 节开始`;
+      case 'period_end': return `第 ${e.quarter} 节结束 ${e.score[0]}:${e.score[1]}`;
+      case 'game_end': return `比赛结束 ${e.score[0]}:${e.score[1]}`;
+      case 'play_call': return `战术：${({high_pnr:'高位挡拆',horns:'牛角',floppy:'弹簧',spain_pnr:'西班牙挡拆',post_up:'低位单打',iso:'拉开单打'})[e.play]||e.play}`;
+      case 'pass': return `${nm(e.by)} → ${nm(e.to)}`;
+      case 'drive': return `${nm(e.by)} 突破` + (e.beat===true ? '，过掉 '+nm(e.on) : e.beat===false ? '，被 '+nm(e.on)+' 挡住' : '');
+      case 'shot': return e.blocked ? `${nm(e.by)} ${ZONE[e.zone]}出手被盖` : e.fouled ? `${nm(e.by)} ${ZONE[e.zone]}出手被犯规` :
+        `${nm(e.by)} ${ZONE[e.zone]}出手 ${e.made?'命中':'不中'}（${Math.round(e.p*100)}%）`;
+      case 'block': return `${nm(e.by)} 盖帽`;
+      case 'rebound': return `${nm(e.by)} ${e.offensive?'进攻':'防守'}篮板`;
+      case 'steal': return `${nm(e.by)} 抢断`;
+      case 'strip': return `${nm(e.by)} 掏球`;
+      case 'turnover': return `${nm(e.by)} 失误：${TOV[e.kind]||e.kind}`;
+      case 'violation': return e.rule==='defensive_three_seconds' ? `${nm(e.by)} 防守三秒` : null;
+      case 'foul': return `${nm(e.by)} ${e.kind==='shooting'?'投篮犯规':'犯规'}（全队 ${e.team_fouls} 次）`;
+      case 'free_throw': return `${nm(e.by)} 罚球 ${e.n}/${e.of} ${e.made?'命中':'不中'}`;
+      case 'and_one': return `${nm(e.by)} 2+1`;
+      case 'charge': return `${nm(e.by)} 撞人`;
+      case 'switch': return `换防`;
+      default: return null;
     }
   }
+  const actor = e => e.by != null ? teamOf(e.by) : (e.team != null ? e.team : null);
 
   function load(d, label){
-    data = d;
-    const sel = $('poss'); sel.innerHTML = '';
-    d.possessions.forEach((p,k)=>{
-      const o = document.createElement('option');
-      o.value = k; o.textContent = `回合 ${k+1}：${p.meta.offense} 进攻`;
-      sel.appendChild(o);
-    });
+    R = d; t = 0; playing = false; $('play').textContent = '播放';
+    $('na').textContent = d.meta.teams[0]; $('nb').textContent = d.meta.teams[1];
+    $('seek').max = d.frames[d.frames.length-1].t;
     if (label) $('src').textContent = label;
-    pick(0);
-  }
-
-  function pick(k){
-    poss = data.possessions[k]; t = 0; playing = false; $('play').textContent = '播放';
-    const end = poss.frames[poss.frames.length-1].t;
-    $('seek').max = end; $('seek').value = 0;
-    $('teams').textContent = `${poss.meta.offense} 进攻 · ${poss.meta.defense} 防守`;
-    $('outcome').textContent = `结果：${OUTCOME[poss.outcome]||poss.outcome}，${poss.points} 分`;
-    const ev = $('events'); ev.innerHTML = '';
-    poss.events.forEach(e=>{
-      const row = document.createElement('div'); row.className = 'ev'; row.dataset.t = e.t;
-      row.innerHTML = `<span class="t">${e.t.toFixed(1)}</span><span></span>`;
-      row.lastChild.textContent = describe(e);
-      row.onclick = () => { t = e.t; draw(); };
-      ev.appendChild(row);
+    const box = $('events'); box.innerHTML = ''; rows = [];
+    d.events.forEach(e => {
+      const txt = describe(e); if (!txt) return;
+      const r = document.createElement('div');
+      const tm = actor(e);
+      r.className = 'ev' + (tm===0?' ta':tm===1?' tb':'');
+      const m = Math.floor(e.gc/60), s = Math.floor(e.gc%60).toString().padStart(2,'0');
+      r.innerHTML = `<span class="t">Q${e.q} ${m}:${s}</span><span class="d"></span>`;
+      r.lastChild.textContent = txt;
+      r.onclick = () => { t = e.t; draw(); };
+      r.dataset.t = e.t; box.appendChild(r); rows.push(r);
     });
-    const r = $('roster'); r.innerHTML = '';
-    poss.meta.players.forEach(p=>{
-      const s = document.createElement('div'); s.className = p.team==='offense'?'o':'d';
-      s.textContent = `${p.pos} ${p.name}`; r.appendChild(s);
-    });
+    renderBox();
     draw();
   }
 
+  function renderBox(){
+    const b = R.box, P = R.meta.players;
+    const col = ['pts','fgm','fga','fg3m','fg3a','ftm','fta','orb','drb','ast','stl','blk','tov','pf'];
+    const head = ['球员','得分','投篮','三分','罚球','篮板','助攻','抢断','盖帽','失误','犯规'];
+    let h = '<table><thead><tr>' + head.map(x=>`<th>${x}</th>`).join('') + '</tr></thead><tbody>';
+    [0,1].forEach(tm => {
+      h += `<tr class="${tm?'hb':'ha'}"><td colspan="11">${R.meta.teams[tm]} ${R.score[tm]}</td></tr>`;
+      for (let i = tm*5; i < tm*5+5; i++){
+        h += `<tr><td>${P[i].pos} ${P[i].name}</td><td>${b.pts[i]}</td><td>${b.fgm[i]}-${b.fga[i]}</td>` +
+          `<td>${b.fg3m[i]}-${b.fg3a[i]}</td><td>${b.ftm[i]}-${b.fta[i]}</td><td>${b.orb[i]+b.drb[i]}</td>` +
+          `<td>${b.ast[i]}</td><td>${b.stl[i]}</td><td>${b.blk[i]}</td><td>${b.tov[i]}</td><td>${b.pf[i]}</td></tr>`;
+      }
+    });
+    $('box').innerHTML = h + '</tbody></table>';
+  }
+
+  function frameIdx(tt){ return Math.max(0, Math.min(R.frames.length-1, Math.floor(tt/R.meta.dt + 1e-6))); }
   function frameAt(tt){
-    const fr = poss.frames, dt = poss.meta.dt;
-    const i = Math.max(0, Math.min(fr.length-1, Math.floor(tt/dt + 1e-6)));
-    const j = Math.min(fr.length-1, i+1);
-    const a = fr[i], b = fr[j];
-    const u = j===i ? 0 : Math.max(0, Math.min(1, (tt - a.t)/(b.t - a.t || dt)));
-    const lerp = (x,y)=>x+(y-x)*u;
-    return {
-      sc: lerp(a.sc,b.sc), gc: lerp(a.gc,b.gc), holder: a.holder,
-      ball: a.ball.map((v,k)=>lerp(v,b.ball[k])),
-      p: a.p.map((q,k)=>[lerp(q[0],b.p[k][0]), lerp(q[1],b.p[k][1])])
-    };
+    const i = frameIdx(tt), j = Math.min(R.frames.length-1, i+1), a = R.frames[i], b = R.frames[j];
+    const u = j===i ? 0 : Math.max(0, Math.min(1, (tt - a.t)/((b.t - a.t) || R.meta.dt)));
+    const lp = (x,y)=>x+(y-x)*u;
+    return Object.assign({}, a, {
+      ball: a.ball.map((v,k)=>lp(v,b.ball[k])),
+      p: a.p.map((q,k)=>[lp(q[0],b.p[k][0]), lp(q[1],b.p[k][1])])
+    });
+  }
+
+  function half(dir){
+    // dir +1: right basket at x=88.75 ; -1: left basket at x=5.25
+    const bx = dir>0 ? (L-5.25) : 5.25, base = dir>0 ? L : 0, sgn = dir>0 ? -1 : 1;
+    ctx.fillStyle = css('--paint');
+    ctx.fillRect(Math.min(base, base+sgn*19)*S, 17*S, 19*S, 16*S);
+    ctx.strokeRect(Math.min(base, base+sgn*19)*S, 17*S, 19*S, 16*S);
+    ctx.beginPath(); ctx.arc((base+sgn*19)*S, 25*S, 6*S, 0, Math.PI*2); ctx.stroke();
+    const brk = Math.sqrt(23.75**2 - 22**2);
+    const ang = Math.atan2(22, brk);
+    ctx.beginPath();
+    ctx.moveTo(base*S, 3*S); ctx.lineTo((bx + sgn*brk)*S, 3*S);
+    if (dir>0) ctx.arc(bx*S, 25*S, 23.75*S, -Math.PI/2 - (Math.PI/2-ang) , Math.PI/2 + (Math.PI/2-ang), true);
+    else ctx.arc(bx*S, 25*S, 23.75*S, -ang, ang, false);
+    ctx.lineTo(base*S, 47*S); ctx.stroke();
+    ctx.beginPath();
+    if (dir>0) ctx.arc(bx*S, 25*S, 4*S, Math.PI/2, -Math.PI/2, false); else ctx.arc(bx*S, 25*S, 4*S, -Math.PI/2, Math.PI/2, false);
+    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo((base+sgn*4)*S, 22*S); ctx.lineTo((base+sgn*4)*S, 28*S); ctx.stroke();
+    ctx.save(); ctx.strokeStyle = css('--ball'); ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(bx*S, 25*S, 0.75*S, 0, Math.PI*2); ctx.stroke(); ctx.restore();
   }
 
   function court(){
-    const ink = css('--ink');
     ctx.fillStyle = css('--floor'); ctx.fillRect(0,0,cv.width,cv.height);
-    ctx.fillStyle = css('--paint'); ctx.fillRect(17*S, 0, 16*S, 19*S);
-    ctx.strokeStyle = ink; ctx.globalAlpha = .55; ctx.lineWidth = 2;
-    ctx.strokeRect(1,1,W*S-2,H*S-2);
-    ctx.strokeRect(17*S, 0, 16*S, 19*S);
-    ctx.beginPath(); ctx.arc(25*S, 19*S, 6*S, 0, Math.PI*2); ctx.stroke();
-    const by = 5.25*S, R = 23.75*S;
-    const breakY = 5.25 + Math.sqrt(23.75**2 - 22**2);
-    const ang = Math.atan2((breakY-5.25)*S, 22*S);
-    ctx.beginPath(); ctx.moveTo(3*S,0); ctx.lineTo(3*S, breakY*S);
-    ctx.arc(25*S, by, R, Math.PI-ang, ang, true); ctx.lineTo(47*S,0); ctx.stroke();
-    ctx.beginPath(); ctx.arc(25*S, by, 4*S, Math.PI, 0, true); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(22*S, 4*S); ctx.lineTo(28*S, 4*S); ctx.stroke();
-    ctx.beginPath(); ctx.arc(25*S, H*S, 6*S, Math.PI, 0); ctx.stroke();
+    ctx.strokeStyle = css('--ink'); ctx.globalAlpha = .5; ctx.lineWidth = 2;
+    ctx.strokeRect(1,1,L*S-2,W*S-2);
+    ctx.beginPath(); ctx.moveTo(47*S,0); ctx.lineTo(47*S,W*S); ctx.stroke();
+    ctx.beginPath(); ctx.arc(47*S,25*S,6*S,0,Math.PI*2); ctx.stroke();
+    half(1); half(-1);
     ctx.globalAlpha = 1;
-    ctx.strokeStyle = css('--ball'); ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(25*S, by, 0.75*S, 0, Math.PI*2); ctx.stroke();
   }
 
   function draw(){
-    if (!poss) return;
+    if (!R) return;
     const f = frameAt(t);
     court();
-    const off = css('--off'), def = css('--def'), panel = css('--panel');
+    const ca = css('--a'), cb = css('--b'), panel = css('--panel');
     f.p.forEach((q,i)=>{
-      const pl = poss.meta.players[i], isOff = pl.team==='offense';
+      const pl = R.meta.players[i], col = pl.team ? cb : ca, off = pl.team === f.off;
       const x = q[0]*S, y = q[1]*S;
-      ctx.beginPath(); ctx.arc(x, y, 1.25*S, 0, Math.PI*2);
-      ctx.fillStyle = isOff ? panel : def; ctx.fill();
-      ctx.lineWidth = 3; ctx.strokeStyle = isOff ? off : def; ctx.stroke();
-      ctx.fillStyle = isOff ? off : panel;
-      ctx.font = 'bold 14px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.beginPath(); ctx.arc(x, y, 1.3*S, 0, Math.PI*2);
+      ctx.fillStyle = off ? col : panel; ctx.fill();
+      ctx.lineWidth = 3; ctx.strokeStyle = col; ctx.stroke();
+      ctx.fillStyle = off ? panel : col;
+      ctx.font = 'bold 15px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText(pl.pos, x, y);
-      ctx.fillStyle = isOff ? off : def; ctx.font = '13px system-ui';
-      ctx.fillText(nameOf(i), x, y + 1.25*S + 11);
-      if (f.holder === i){ ctx.beginPath(); ctx.arc(x, y, 1.25*S+5, 0, Math.PI*2);
-        ctx.strokeStyle = css('--ball'); ctx.lineWidth = 2; ctx.stroke(); }
+      ctx.fillStyle = col; ctx.font = '14px system-ui';
+      ctx.fillText(nm(i), x, y + 1.3*S + 12);
+      if (f.h === i){ ctx.beginPath(); ctx.arc(x, y, 1.3*S+5, 0, Math.PI*2); ctx.strokeStyle = css('--ball'); ctx.lineWidth = 2.5; ctx.stroke(); }
     });
-    const [bx,by,bz] = f.ball, r = 0.45*S*(1 + (bz-3.5)/14);
+    const [bx,by,bz] = f.ball;
     ctx.globalAlpha = .25; ctx.fillStyle = css('--ink');
-    ctx.beginPath(); ctx.ellipse(bx*S, by*S, 0.45*S, 0.3*S, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(bx*S, by*S, 0.5*S, 0.32*S, 0, 0, Math.PI*2); ctx.fill();
     ctx.globalAlpha = 1; ctx.fillStyle = css('--ball');
-    ctx.beginPath(); ctx.arc(bx*S, by*S - (bz-3.5)*4, r, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(bx*S, by*S - Math.max(0,bz-3.5)*5, 0.5*S*(1+Math.max(0,bz-3.5)/16), 0, Math.PI*2); ctx.fill();
 
-    $('shot').textContent = f.sc.toFixed(1);
+    $('sa').textContent = f.s[0]; $('sb').textContent = f.s[1];
+    $('ta').classList.toggle('poss', f.off===0); $('tb').classList.toggle('poss', f.off===1);
+    $('q').textContent = f.q;
     const m = Math.floor(f.gc/60), s = (f.gc%60).toFixed(1).padStart(4,'0');
-    $('gclock').textContent = `${m}:${s}`;
-    $('tt').textContent = t.toFixed(1);
+    $('gc').textContent = `${m}:${s}`;
+    $('sc').textContent = Math.ceil(f.sc);
+    $('la').textContent = f.lab[0] || '—'; $('lb').textContent = f.lab[1] || '—';
     $('seek').value = t;
-    document.querySelectorAll('.ev').forEach(el=>{
-      const et = +el.dataset.t;
-      el.classList.toggle('past', et <= t + 1e-6);
-      el.classList.toggle('now', et <= t + 1e-6 && et > t - 0.6);
-    });
+    let lastPast = null;
+    rows.forEach(r => { const past = +r.dataset.t <= t + 1e-6; r.classList.toggle('past', past); r.classList.remove('now'); if (past) lastPast = r; });
+    if (lastPast){ lastPast.classList.add('now'); if (playing) lastPast.scrollIntoView({block:'nearest'}); }
+  }
+
+  function jumpPossession(dir){
+    const ps = R.events.filter(e => e.type==='possession' || e.type==='jump_ball').map(e => e.t);
+    const cand = dir>0 ? ps.find(x => x > t + 0.05) : [...ps].reverse().find(x => x < t - 0.5);
+    if (cand != null){ t = cand; draw(); }
   }
 
   function tick(ts){
-    if (playing && poss){
+    if (playing && R){
       if (last != null) t += (ts - last)/1000 * +$('speed').value;
-      const end = poss.frames[poss.frames.length-1].t;
+      const end = R.frames[R.frames.length-1].t;
       if (t >= end){ t = end; playing = false; $('play').textContent = '播放'; }
       draw();
     }
     last = ts; requestAnimationFrame(tick);
   }
 
-  $('play').onclick = () => {
-    if (!poss) return;
-    const end = poss.frames[poss.frames.length-1].t;
-    if (t >= end) t = 0;
-    playing = !playing; $('play').textContent = playing ? '暂停' : '播放';
-  };
+  $('play').onclick = () => { if (!R) return; if (t >= R.frames[R.frames.length-1].t) t = 0;
+    playing = !playing; $('play').textContent = playing ? '暂停' : '播放'; };
   $('seek').oninput = e => { t = +e.target.value; draw(); };
-  $('poss').onchange = e => pick(+e.target.value);
-  $('file').onchange = e => {
-    const fl = e.target.files[0]; if (!fl) return;
-    fl.text().then(txt => load(JSON.parse(txt), fl.name));
-  };
+  $('prev').onclick = () => jumpPossession(-1);
+  $('next').onclick = () => jumpPossession(1);
+  $('file').onchange = e => { const fl = e.target.files[0]; if (fl) fl.text().then(x => load(JSON.parse(x), fl.name)); };
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
 
   if (window.REPLAY) load(window.REPLAY, '内置示例回放');
