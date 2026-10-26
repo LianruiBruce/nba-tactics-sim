@@ -2,7 +2,8 @@
 
     python scripts/build_dataset.py --seasons 2024-25 2025-26
 
-Reads data/nba/<season>/actions*.jsonl.gz and boxscores.jsonl.gz, writes
+Reads data/nba/<season>/actions*.jsonl.gz + boxscores.jsonl.gz (cdn.nba.com)
+and/or pbp_stats*.jsonl.gz (stats.nba.com playbyplayv2), writes
 data/processed/<season>/possessions.parquet, shots.parquet and checks.csv,
 then prints the phase-1 gate: points from possessions vs the box score, and
 possessions per team-game vs stats.nba.com's POSS.
@@ -20,6 +21,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from nbasim.data.pbp import possessions_for_game  # noqa: E402
+from nbasim.data.pbp_v2 import convert  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 NBA = ROOT / "data" / "nba"
@@ -42,17 +44,53 @@ def stats_table(season: str, name: str) -> pd.DataFrame | None:
     return pd.DataFrame(rs["rowSet"], columns=rs["headers"])
 
 
-def build(season: str) -> pd.DataFrame:
+def stats_games(season: str):
+    """Yield (game_id, actions, box) from stats.nba.com play-by-play."""
     src = NBA / season
+    files = sorted(src.glob("pbp_stats*.jsonl.gz"))
+    if not files:
+        return
+    columns = json.loads((src / "pbp_v2_columns.json").read_text())
+    log = stats_table(season, "gamelog_team")
+    teams = {}
+    for r in log.itertuples():
+        g = teams.setdefault(r.GAME_ID, {})
+        g["home" if " vs. " in r.MATCHUP else "away"] = (int(r.TEAM_ID), int(r.PTS))
+    sc = stats_table(season, "shotchart")
+    shots: dict[str, dict] = {}
+    if sc is not None:
+        for row in sc.to_dict("records"):
+            shots.setdefault(row["GAME_ID"], {})[row["GAME_EVENT_ID"]] = row
+    for rec in read_jsonl(files):
+        gid = rec["gameId"]
+        if "v2" not in rec or gid not in teams or len(teams[gid]) != 2:
+            continue  # TODO: playbyplayv3-only games
+        (home, hp), (away, ap) = teams[gid]["home"], teams[gid]["away"]
+        acts, box = convert(gid, columns, rec["v2"], home, away, hp, ap, shots.get(gid))
+        yield gid, acts, box
+
+
+def cdn_games(season: str):
+    src = NBA / season
+    if not (src / "boxscores.jsonl.gz").exists():
+        return
     boxes = {b["gameId"]: b for b in read_jsonl([src / "boxscores.jsonl.gz"])}
     actions: dict[str, list] = {}
     for a in read_jsonl(sorted(src.glob("actions*.jsonl.gz"))):
         actions.setdefault(a["gameId"], []).append(a)
-    poss_rows, shot_rows, checks = [], [], []
     for gid in sorted(actions):
-        if gid not in boxes:
+        if gid in boxes:
+            yield gid, actions[gid], boxes[gid]
+
+
+def build(season: str) -> pd.DataFrame:
+    poss_rows, shot_rows, checks = [], [], []
+    seen = set()
+    for gid, acts, box in list(cdn_games(season)) + list(stats_games(season)):
+        if gid in seen:
             continue
-        poss, check = possessions_for_game(gid, actions[gid], boxes[gid])
+        seen.add(gid)
+        poss, check = possessions_for_game(gid, acts, box)
         checks.append(check)
         for i, p in enumerate(poss):
             d = asdict(p)

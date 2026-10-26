@@ -9,10 +9,15 @@ stats.nba.com often blocks cloud IPs, so run this on a home machine:
 
     python scripts/fetch_nba.py --seasons 2022-23 2023-24 2024-25 2025-26 2026-27
 
+Per-game play-by-play comes from cdn.nba.com when it answers; if the CDN refuses
+(403), it falls back to stats.nba.com playbyplayv2 (plus playbyplayv3 when v2 is
+empty) and a league-wide shot chart for coordinates.
+
 Raw responses are cached under data/raw/ (re-runs skip what is already there).
 Then everything is packed into data/nba/<season>/:
-    actions.jsonl.gz    every play-by-play action, one JSON object per line, with gameId
-    boxscores.jsonl.gz  one box score per game
+    actions.jsonl.gz    cdn liveData actions, one JSON object per line, with gameId
+    boxscores.jsonl.gz  cdn liveData box score per game
+    pbp_stats.jsonl.gz  stats.nba.com play-by-play per game (when the CDN refused)
     stats/<name>.json.gz one file per stats.nba.com call
 """
 from __future__ import annotations
@@ -47,7 +52,7 @@ STATS_HEADERS = {
     "x-nba-stats-origin": "stats",
     "x-nba-stats-token": "true",
 }
-CDN_HEADERS = {"User-Agent": STATS_HEADERS["User-Agent"], "Referer": "https://www.nba.com/"}
+CDN_HEADERS = {k: v for k, v in STATS_HEADERS.items() if not k.startswith("x-nba")}
 
 PLAY_TYPES = ["Isolation", "Transition", "PRBallHandler", "PRRollman", "Postup", "Spotup",
               "Handoff", "Cut", "OffScreen", "OffRebound", "Misc"]
@@ -146,6 +151,14 @@ def fetch_season_stats(season: str, season_type: str = "Regular Season") -> None
     for cat in DEFEND_CATEGORIES:
         calls.append((f"defend_{cat.replace(' ', '_')}", "leaguedashptdefend",
                       {**dash, "DefenseCategory": cat}))
+    calls.append(("shotchart", "shotchartdetail",
+                  {**base, "PlayerID": 0, "TeamID": 0, "GameID": "", "ContextMeasure": "FGA",
+                   "PlayerPosition": "", "RookieYear": "", "Position": "", "Outcome": "",
+                   "Location": "", "Month": 0, "SeasonSegment": "", "DateFrom": "", "DateTo": "",
+                   "OpponentTeamID": 0, "VsConference": "", "VsDivision": "", "GameSegment": "",
+                   "Period": 0, "LastNGames": 0, "AheadBehind": "", "ClutchTime": "",
+                   "PointDiff": "", "RangeType": 0, "StartPeriod": 1, "EndPeriod": 10,
+                   "StartRange": 0, "EndRange": 28800, "ContextFilter": ""}))
     calls.append(("matchups", "leagueseasonmatchups",
                   {**base, "PerMode": "Totals", "DefPlayerID": "", "DefTeamID": "",
                    "OffPlayerID": "", "OffTeamID": ""}))
@@ -168,58 +181,130 @@ def season_game_ids(season: str) -> list[str]:
     return [f"002{yy}{n:05d}" for n in range(1, 1231)]
 
 
-def fetch_games(season: str, workers: int) -> list[str]:
+V2_KEEP = ["EVENTNUM", "EVENTMSGTYPE", "EVENTMSGACTIONTYPE", "PERIOD", "PCTIMESTRING",
+           "HOMEDESCRIPTION", "NEUTRALDESCRIPTION", "VISITORDESCRIPTION", "SCORE",
+           "PERSON1TYPE", "PLAYER1_ID", "PLAYER1_TEAM_ID", "PERSON2TYPE", "PLAYER2_ID",
+           "PLAYER2_TEAM_ID", "PERSON3TYPE", "PLAYER3_ID", "PLAYER3_TEAM_ID"]
+cdn_blocked = False
+
+
+def stats_game(season: str, kind: str, gid: str) -> bytes | None:
+    path = RAW / season / kind / f"{gid}.json.gz"
+    if path.exists():
+        return gzip.decompress(path.read_bytes())
+    endpoint, params = {
+        "pbp_v2": ("playbyplayv2", {"GameID": gid, "StartPeriod": 0, "EndPeriod": 14}),
+        "pbp_v3": ("playbyplayv3", {"GameID": gid, "StartPeriod": 0, "EndPeriod": 0}),
+    }[kind]
+    data = get(STATS.format(endpoint=endpoint, query=urllib.parse.urlencode(params)), STATS_HEADERS)
+    time.sleep(0.6)
+    if data is not None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(gzip.compress(data))
+    return data
+
+
+def v2_rows(data: bytes) -> list:
+    rs = json.loads(data)["resultSets"][0]
+    return rs["rowSet"]
+
+
+def fetch_games(season: str, workers: int, stats_workers: int) -> tuple[list[str], list[str]]:
+    """Returns (games from the CDN, games from stats.nba.com)."""
+    global cdn_blocked
     ids = season_game_ids(season)
-    got = []
+    cdn_ok, stats_ok = [], []
 
     def one(gid):
-        pbp = cached(RAW / season / "pbp" / f"{gid}.json.gz",
-                     lambda: get(CDN_PBP.format(gid=gid), CDN_HEADERS))
-        box = cached(RAW / season / "box" / f"{gid}.json.gz",
-                     lambda: get(CDN_BOX.format(gid=gid), CDN_HEADERS))
-        return gid, pbp is not None and box is not None
+        global cdn_blocked
+        if not cdn_blocked or (RAW / season / "pbp" / f"{gid}.json.gz").exists():
+            pbp = cached(RAW / season / "pbp" / f"{gid}.json.gz",
+                         lambda: get(CDN_PBP.format(gid=gid), CDN_HEADERS))
+            if pbp is not None:
+                box = cached(RAW / season / "box" / f"{gid}.json.gz",
+                             lambda: get(CDN_BOX.format(gid=gid), CDN_HEADERS))
+                if box is not None:
+                    return gid, "cdn"
+            else:
+                cdn_blocked = True
+        v2 = stats_game(season, "pbp_v2", gid)
+        if v2 is not None and v2_rows(v2):
+            return gid, "stats"
+        v3 = stats_game(season, "pbp_v3", gid)
+        if v3 is not None and json.loads(v3).get("game", {}).get("actions"):
+            return gid, "stats"
+        return gid, None
 
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = [pool.submit(one, gid) for gid in ids]
-        for n, f in enumerate(as_completed(futures), 1):
-            gid, ok = f.result()
-            if ok:
-                got.append(gid)
+    # probe the CDN once before fanning out
+    first = one(ids[0])
+    results = [first]
+    n_workers = workers if first[1] == "cdn" else stats_workers
+    if first[1] != "cdn":
+        print(f"  cdn.nba.com refused; using stats.nba.com play-by-play ({n_workers} workers)", flush=True)
+    with ThreadPoolExecutor(max_workers=n_workers) as pool:
+        futures = [pool.submit(one, gid) for gid in ids[1:]]
+        for n, f in enumerate(as_completed(futures), 2):
+            results.append(f.result())
             if n % 100 == 0 or n == len(ids):
-                print(f"  games {n}/{len(ids)}, ok {len(got)}", flush=True)
-    return sorted(got)
+                print(f"  games {n}/{len(ids)}", flush=True)
+    for gid, src in results:
+        if src == "cdn":
+            cdn_ok.append(gid)
+        elif src == "stats":
+            stats_ok.append(gid)
+    missing = len(ids) - len(cdn_ok) - len(stats_ok)
+    print(f"  {len(cdn_ok)} games from cdn, {len(stats_ok)} from stats.nba.com, {missing} missing", flush=True)
+    return sorted(cdn_ok), sorted(stats_ok)
 
 
-def pack(season: str, game_ids: list[str]) -> None:
+def pack(season: str, cdn_ids: list[str], stats_ids: list[str]) -> None:
     out = OUT / season
     (out / "stats").mkdir(parents=True, exist_ok=True)
-    with gzip.open(out / "actions.jsonl.gz", "wt", encoding="utf-8") as fa, \
-            gzip.open(out / "boxscores.jsonl.gz", "wt", encoding="utf-8") as fb:
-        for gid in game_ids:
-            pbp = json.loads(gzip.decompress((RAW / season / "pbp" / f"{gid}.json.gz").read_bytes()))
-            for a in pbp["game"]["actions"]:
-                a["gameId"] = gid
-                fa.write(json.dumps(a, separators=(",", ":")) + "\n")
-            box = json.loads(gzip.decompress((RAW / season / "box" / f"{gid}.json.gz").read_bytes()))
-            fb.write(json.dumps(box["game"], separators=(",", ":")) + "\n")
+    if cdn_ids:
+        with gzip.open(out / "actions.jsonl.gz", "wt", encoding="utf-8") as fa, \
+                gzip.open(out / "boxscores.jsonl.gz", "wt", encoding="utf-8") as fb:
+            for gid in cdn_ids:
+                pbp = json.loads(gzip.decompress((RAW / season / "pbp" / f"{gid}.json.gz").read_bytes()))
+                for a in pbp["game"]["actions"]:
+                    a["gameId"] = gid
+                    fa.write(json.dumps(a, separators=(",", ":")) + "\n")
+                box = json.loads(gzip.decompress((RAW / season / "box" / f"{gid}.json.gz").read_bytes()))
+                fb.write(json.dumps(box["game"], separators=(",", ":")) + "\n")
+    if stats_ids:
+        with gzip.open(out / "pbp_stats.jsonl.gz", "wt", encoding="utf-8") as fs:
+            for gid in stats_ids:
+                rec = {"gameId": gid}
+                v2p = RAW / season / "pbp_v2" / f"{gid}.json.gz"
+                rows = v2_rows(gzip.decompress(v2p.read_bytes())) if v2p.exists() else []
+                if rows:
+                    rs = json.loads(gzip.decompress(v2p.read_bytes()))["resultSets"][0]
+                    keep = [rs["headers"].index(h) for h in V2_KEEP]
+                    rec["v2"] = [[r[i] for i in keep] for r in rows]
+                else:
+                    v3 = json.loads(gzip.decompress((RAW / season / "pbp_v3" / f"{gid}.json.gz").read_bytes()))
+                    rec["v3"] = v3["game"]["actions"]
+                fs.write(json.dumps(rec, separators=(",", ":")) + "\n")
+        (out / "pbp_v2_columns.json").write_text(json.dumps(V2_KEEP))
     for f in sorted((RAW / season / "stats").glob("*.json.gz")):
         (out / "stats" / f.name).write_bytes(f.read_bytes())
     sizes = {p.name: p.stat().st_size for p in out.iterdir() if p.is_file()}
-    print(f"  packed {len(game_ids)} games -> {out} {sizes}")
+    print(f"  packed {len(cdn_ids) + len(stats_ids)} games -> {out} {sizes}")
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--seasons", nargs="+", default=["2022-23", "2023-24", "2024-25", "2025-26", "2026-27"])
     ap.add_argument("--workers", type=int, default=8, help="parallel downloads from cdn.nba.com")
+    ap.add_argument("--stats-workers", type=int, default=2,
+                    help="parallel per-game calls to stats.nba.com when the CDN refuses")
     ap.add_argument("--skip-stats", action="store_true", help="only play-by-play and box scores")
     args = ap.parse_args()
     for season in args.seasons:
         print(f"== {season}", flush=True)
         if not args.skip_stats:
             fetch_season_stats(season)
-        ids = fetch_games(season, args.workers)
-        pack(season, ids)
+        cdn_ids, stats_ids = fetch_games(season, args.workers, args.stats_workers)
+        pack(season, cdn_ids, stats_ids)
 
 
 if __name__ == "__main__":

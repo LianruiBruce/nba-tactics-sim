@@ -24,6 +24,10 @@ SKIP_ACTOR = {"timeout", "period", "game", "memo", "stoppage", "instantreplay", 
 
 
 def clock_seconds(clock: str) -> float:
+    """Seconds left in the period, from 'PT11M48.00S' (liveData/v3) or '11:48' (v2)."""
+    if clock and ":" in clock:
+        mm, ss = clock.split(":")
+        return int(mm) * 60 + float(ss)
     m = CLOCK_RE.fullmatch(clock or "")
     if not m:
         return 0.0
