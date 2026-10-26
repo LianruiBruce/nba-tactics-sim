@@ -64,6 +64,8 @@ pytest
 
 目标是让模拟器能回答真实球队的问题（阵容和对位推演），并在留出的真实赛季上回测。方案见 https://claude.ai/artifact/FsEAbrqY8r1NyrLLacFW49 。
 
+**每个工具的完整命令和真实示例输出见 [docs/usage.md](docs/usage.md)。**
+
 数据来自 NBA.com 的公开接口，存放在仓库的 `nba-data` 分支（2022-23 至 2026-27，每季约 50 MB）：
 
 ```bash
