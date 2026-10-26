@@ -48,6 +48,10 @@ def members(team: int) -> range:
     return range(0, 5) if team == 0 else range(5, 10)
 
 
+# shot zones grouped the way nbasim.realmodel measures shot making
+ZGROUP = {"rim": 0, "short_mid": 1, "long_mid": 1, "corner3": 2, "above3": 2}
+
+
 @dataclass
 class Event:
     t: float
@@ -154,8 +158,31 @@ class Engine:
         self.possessions = [0, 0]
         self.tov_types: dict[str, int] = {}
         self.foul_types: dict[str, int] = {}
+        self._lineup_terms()
 
         self._start_period(first=True)
+
+    def _lineup_terms(self) -> None:
+        """Log-odds terms from real data that depend on all ten players (zero for 2K-only players).
+
+        nbasim.realmodel measures, per player, how his presence moves teammates' and
+        opponents' shot making, turnovers and fouls drawn; ratings carry only the
+        shooter's own skill, so these terms are added on top.
+        """
+        self.lineup_make = np.zeros((N, 3))  # added to the make logit of i's shots, by zone group
+        self.lineup_tov = np.zeros(2)        # log multiplier on the team's turnover hazards
+        self.lineup_trip = np.zeros(2)       # log multiplier on the team's shooting-foul chance
+        if not all(p.real for p in self.players):
+            return
+        r = [p.real for p in self.players]
+        for team in (0, 1):
+            off, de = members(team), members(1 - team)
+            self.lineup_tov[team] = sum(r[i]["tov_off"] for i in off) + sum(r[j]["tov_def"] for j in de)
+            self.lineup_trip[team] = sum(r[i]["trip_off"] for i in off) + sum(r[j]["trip_def"] for j in de)
+            for i in off:
+                for g, name in enumerate(("rim", "mid", "three")):
+                    self.lineup_make[i, g] = (sum(r[m][f"mate_{name}"] for m in off if m != i)
+                                              + sum(r[j][f"guard_{name}"] for j in de))
 
     # ------------------------------------------------------------- frames
     def local(self, xy, team: int | None = None) -> np.ndarray:
@@ -187,7 +214,7 @@ class Engine:
         self.status = PASS
         self.flight = Flight(kind="pass", src=i, dst=j, start=self.ball.copy(), inbound=inbound)
         self._log("pass", by=i, to=j)
-        if not inbound and self.rng.random() < resolve.CAL["bad_pass_oob"] * (
+        if not inbound and self.rng.random() < resolve.CAL["bad_pass_oob"] * math.exp(self.lineup_tov[team_of(i)]) * (
                 1.0 + 0.5 * (75 - self.players[i].playmaking.pass_accuracy) / 10):
             self._log("bad_pass", by=i)
             self._turnover(i, "bad_pass_oob", steal_by=None)
@@ -202,7 +229,8 @@ class Engine:
         defender = self.players[d_idx] if d_idx is not None else None
         near_rim_catch = self.hold_time < 1.0 and court.dist_to_basket(loc) < 6
         p, zone = resolve.make_prob(shooter, loc, defender, d_dist, self.off_dribble(i), near_rim_catch)
-        p = resolve.sigmoid(resolve.logit(p) + self.rng.normal(0.0, resolve.shot_noise_sd(shooter)))
+        p = resolve.sigmoid(resolve.logit(p) + self.lineup_make[i, ZGROUP[zone]]
+                            + self.rng.normal(0.0, resolve.shot_noise_sd(shooter)))
         three = court.is_three(loc)
         pts = 3 if three else 2
         self._clear_paint_timers()
@@ -224,7 +252,8 @@ class Engine:
             return True
 
         made = bool(self.rng.random() < p)
-        fouled = defender is not None and self.rng.random() < resolve.shooting_foul_prob(shooter, defender, d_dist, zone)
+        fouled = defender is not None and self.rng.random() < resolve.shooting_foul_prob(
+            shooter, defender, d_dist, zone) * math.exp(self.lineup_trip[team_of(i)])
         if fouled and not made:
             self._log("shot", by=i, zone=zone, p=round(p, 3), pts=0, made=False, fouled=True)
             self._foul(d_idx, i, kind="shooting", shots=pts)
@@ -297,6 +326,8 @@ class Engine:
         k = int(np.argmin(d))
         p, zone = resolve.make_prob(self.players[i], loc, self.players[opp[k]], float(d[k]),
                                     off_dribble=at is None and self.off_dribble(i))
+        if self.lineup_make[i, ZGROUP[zone]]:
+            p = resolve.sigmoid(resolve.logit(p) + self.lineup_make[i, ZGROUP[zone]])
         return p * (3 if court.is_three(loc) else 2)
 
     # ---------------------------------------------------------------- tick
@@ -405,7 +436,10 @@ class Engine:
             dist = float(np.linalg.norm(self.pos[j] - self.ball))
             if dist <= resolve.CAL["steal_reach"]:
                 f.rolled.add(j)
-                if self.rng.random() < resolve.steal_prob(self.players[f.src], self.players[j], dist):
+                p_stl = resolve.steal_prob(self.players[f.src], self.players[j], dist)
+                if self.lineup_tov[team_of(f.src)]:
+                    p_stl = resolve.sigmoid(resolve.logit(p_stl) + self.lineup_tov[team_of(f.src)])
+                if self.rng.random() < p_stl:
                     self._log("steal", by=j, kind="interception")
                     self.stats["stl"][j] += 1
                     self._turnover(f.src, "bad_pass_steal", steal_by=j)
@@ -564,7 +598,7 @@ class Engine:
             return True
         if dist < 3.0:
             defender = self.players[j]
-            if self.rng.random() < resolve.strip_rate(holder, defender) * DT:
+            if self.rng.random() < resolve.strip_rate(holder, defender) * math.exp(self.lineup_tov[team_of(h)]) * DT:
                 self._log("strip", by=j, on=h)
                 self._loose_from = h
                 self._loose_ball(from_xy=self.pos[h], dist=(2, 7), duration=0.5, from_rim=False)

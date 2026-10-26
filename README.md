@@ -118,15 +118,29 @@ python scripts/scout.py --team OKC --season 2025-26   # -> data/reports/OKC_2025
 
 ### 真实球员接入模拟引擎
 
-`nbasim/realplayers.py` 把球员模型测出的各项 log-odds 换算成引擎用的数值（按 `resolve.py` 的公式反推，联盟平均球员对应 70），并带上真实出手占比和各区出手分布，球队 AI 按这些分布选择出手。
+`nbasim/realplayers.py` 把球员模型接进引擎，分两部分：
+
+- 投手自己的命中能力和篮板，按 `resolve.py` 的公式反推成数值（联盟平均球员对应 70）。
+- 依赖场上其他人的效应（防守者压低对手命中、组织者带动队友命中、失误、造犯规），存在 `Player.real` 里，由引擎按场上十个人求和后加到对应概率的 log-odds 上，和球员模型的结构一致。系数 `REAL_GAIN` 用 `engine_check.py` 校准，使引擎各分项在不同对位之间的差距和模型一致（斜率约 1）。
+
+球员还带着真实出手占比和各区出手分布，球队 AI 按这些分布选择出手。
 
 ```bash
 python scripts/simulate.py --real --quarters 4 \
     --a "Gilgeous-Alexander, Jalen Williams, Dort, Holmgren, Hartenstein" --b "Brunson, Bridges, Hart, Anunoby, Towns"
-python scripts/engine_check.py --pairs 15 --games 10   # 30 支常用五人组互打 150 场，对照真实数据
+python scripts/engine_check.py --pairs 15 --games 10   # 30 支常用五人组互打 150 场，对照真实数据和模型
 ```
 
-`engine_check.py` 的结果（2025-26 各队最常用五人组）：联盟口径正常（每回合 1.16 分、节奏 102、三分出手占比 43%）；逐个球员看，三分出手占比和真实相关 0.81，命中率相关 0.55（每人约 100 次出手，噪声不小）。但五人组之间的强弱差距，引擎还没有复现好：引擎净效率和球员模型预测只相关 0.13，和真实相关 0.27（球员模型本身是 0.43），引擎会压平明星阵容的优势。所以阵容推演目前以 `whatif.py`（球员模型）为准，引擎用于看回放和做 RL 训练。
+`engine_check.py` 的结果（2025-26 各队最常用五人组，每组 10 场）：
+
+| | 引擎 vs 模型 | 引擎 vs 真实 |
+| --- | --- | --- |
+| 五人组净效率相关 | 0.54 | 0.48（模型自己 0.43） |
+| 每回合得分，斜率 | 0.80 | |
+| 投篮每次出手得分，斜率 | 0.93 | |
+| 失误率，斜率 | 0.86 | |
+
+逐个球员，三分出手占比和真实相关 0.80。已知偏差：引擎节奏偏快（每 48 分钟约 105 回合）、三分出手占比偏高（46%）、罚球偏少（FTA/FGA 0.20，真实约 0.28）；150 场下每组净效率还有约 ±5 的随机误差。
 
 ## 结构
 
