@@ -154,6 +154,22 @@ class Component:
         return 0.0 if c is None else float(self.coef[c])
 
 
+@dataclass
+class ZoneComponent:
+    """Multinomial logit over ZONES: where the lineup's shots come from."""
+    design: Design
+    coef: np.ndarray       # (len(ZONES), width)
+    intercept: np.ndarray  # (len(ZONES),)
+
+    def fixed(self, name: str) -> np.ndarray:
+        i = self.design.fixed.get(name)
+        return np.zeros(len(ZONES)) if i is None else self.coef[:, i] * FIXED
+
+    def player(self, block: str, pid: int) -> np.ndarray:
+        c = self.design.col(block, pid)
+        return np.zeros(len(ZONES)) if c is None else self.coef[:, c]
+
+
 def fit_logistic(rows: list[list[tuple[int, float]]], y: np.ndarray, w: np.ndarray, width: int,
                  C: float) -> tuple[np.ndarray, float]:
     indptr, indices, data = [0], [], []
@@ -165,6 +181,8 @@ def fit_logistic(rows: list[list[tuple[int, float]]], y: np.ndarray, w: np.ndarr
     X = sparse.csr_matrix((data, indices, indptr), shape=(len(rows), width))
     m = LogisticRegression(C=C, max_iter=2000, tol=1e-6)
     m.fit(X, y, sample_weight=w)
+    if m.coef_.shape[0] > 1:  # multinomial: (classes, width)
+        return m.coef_, m.intercept_
     return m.coef_[0], float(m.intercept_[0])
 
 
@@ -181,6 +199,8 @@ class RealModel:
     trip: Component
     make: Component
     oreb: Component
+    zone: ZoneComponent = None
+    resid: dict = None                              # optional RAPM-style correction, see fit_residual
     fga_rate: dict = field(default_factory=dict)    # player -> share weight of FGAs
     trip_rate: dict = field(default_factory=dict)   # player -> share weight of FT trips
     zone_mix: dict = field(default_factory=dict)    # player -> np.array over ZONES
@@ -220,8 +240,20 @@ class RealModel:
         trip = Component(onoff, *fit_logistic(onoff_rows(nt), (nt.outcome == "trip").values,
                                               nt.w.values, onoff.width, C["trip"]))
 
-        log("  fitting shot making")
         fga = ch[ch.outcome == "fga"]
+        log("  fitting shot selection")
+        zd = Design(ctx_fixed, ["off", "def"])
+        zd.player_ids(fga, ["off_lineup", "def_lineup"])
+        rows = []
+        for r in fga[["off_lineup", "def_lineup", "ctx", "home"]].itertuples(index=False):
+            cols = _ctx_cols(zd, r.ctx, r.home)
+            cols += [(zd.col("off", p), 1.0) for p in lineup(r.off_lineup)]
+            cols += [(zd.col("def", p), 1.0) for p in lineup(r.def_lineup)]
+            rows.append(cols)
+        zone_y = fga.zone.map({z: i for i, z in enumerate(ZONES)}).values
+        zone = ZoneComponent(zd, *fit_logistic(rows, zone_y, fga.w.values, zd.width, C.get("zone", C["make"])))
+
+        log("  fitting shot making")
         mk = Design(["z_" + z for z in ZONES[1:]] + ctx_fixed,
                     [f"shoot_{g}" for g in ZGROUP_NAMES] + [f"guard_{g}" for g in ZGROUP_NAMES]
                     + [f"mate_{g}" for g in ZGROUP_NAMES])
@@ -255,7 +287,7 @@ class RealModel:
         oreb = Component(ob, *fit_logistic(rows, miss.oreb.values.astype(bool), miss.w.values,
                                            ob.width, C["oreb"]))
 
-        m = cls(tov, trip, make, oreb)
+        m = cls(tov, trip, make, oreb, zone)
         m._fit_shares(ch)
         return m
 
@@ -292,56 +324,18 @@ class RealModel:
         self.trip_n = {int(n): float(p) for n, p in tn.items()}
 
     # ------------------------------------------------------------- prediction
-    def _p(self, comp: Component, logit: float) -> float:
-        return 1.0 / (1.0 + np.exp(-(comp.intercept + logit)))
-
-    def _onoff(self, comp: Component, off5, def5, ctx: str, home: bool) -> float:
-        z = comp.fixed("ctx_" + ctx) + (comp.fixed("home") if home else 0.0)
-        z += sum(comp.player("off", p) for p in off5) + sum(comp.player("def", p) for p in def5)
-        return self._p(comp, z)
-
-    def chance_terms(self, off5, def5, ctx: str, home: bool) -> tuple[float, float, dict]:
-        """(A, B, detail): a chance is worth A + B * V(next chance after an offensive rebound)."""
-        p_tov = self._onoff(self.tov, off5, def5, ctx, home)
-        p_trip = (1 - p_tov) * self._onoff(self.trip, off5, def5, ctx, home)
-        p_fga = 1 - p_tov - p_trip
-        oreb_base = sum(self.oreb.player("off", p) for p in off5) + sum(self.oreb.player("def", p) for p in def5)
-        oreb_base += self.oreb.fixed("home") if home else 0.0
-        p_oreb = {z: self._p(self.oreb, oreb_base + self.oreb.fixed("m_" + z)) for z in ZONES + ["ft"]}
-
-        ft = np.array([self.ft_pct.get(p, self.league_ft) for p in off5])
-        tr = np.array([self.trip_rate.get(p, 0.2) for p in off5])
-        tr = tr / tr.sum()
-        mean_n = sum(n * q for n, q in self.trip_n.items())
-        A = p_trip * float((tr * ft).sum()) * mean_n
-        B = p_trip * float((tr * (1 - ft)).sum()) * p_oreb["ft"]
-
-        fr = np.array([self.fga_rate.get(p, 0.2) for p in off5])
-        fr = fr / fr.sum()
-        guard = {g: sum(self.make.player("guard_" + g, d) for d in def5) for g in ZGROUP_NAMES}
-        mates = {g: sum(self.make.player("mate_" + g, p) for p in off5) for g in ZGROUP_NAMES}
-        ctx_z = self.make.fixed("ctx_" + ctx) + (self.make.fixed("home") if home else 0.0)
-        exp_fg_pts, p_miss = 0.0, 0.0
-        for i, p in enumerate(off5):
-            mix = self.zone_mix.get(p, self.league_mix)
-            for zi, z in enumerate(ZONES):
-                g = ZGROUP_NAMES[ZGROUP[z]]
-                mate = mates[g] - self.make.player("mate_" + g, p)
-                pm = self._p(self.make, ctx_z + self.make.fixed("z_" + z) + self.make.player("shoot_" + g, p)
-                             + guard[g] + mate)
-                w = fr[i] * mix[zi]
-                exp_fg_pts += w * pm * (ZONE_PTS[z] + self.and1.get(z, 0.0) * ft[i])
-                B += p_fga * w * (1 - pm) * p_oreb[z]
-                p_miss += w * (1 - pm)
-        A += p_fga * exp_fg_pts
-        return A, B, {"p_tov": p_tov, "p_trip": p_trip, "p_fga": p_fga, "fg_pts": exp_fg_pts,
-                      "p_miss": p_miss}
-
     def expected_points(self, off5, def5, home: bool = False, ctx: str = "def_rebound") -> float:
-        A2, B2, _ = self.chance_terms(off5, def5, "oreb", home)
-        v_oreb = A2 / (1 - B2)
-        A, B, _ = self.chance_terms(off5, def5, ctx, home)
-        return A + B * v_oreb
+        row = pd.DataFrame({"off_lineup": ["-".join(map(str, off5))], "def_lineup": ["-".join(map(str, def5))],
+                            "home": [home], "start_type": [ctx]})
+        return float(self.predict(row)[0])
+
+    def breakdown(self, off5, def5, home: bool = False, ctx: str = "def_rebound") -> dict:
+        """Per-chance rates behind expected_points, for reports."""
+        index, _ = self._tables()
+        O = np.array([[index.get(p, 0) for p in off5]])
+        D = np.array([[index.get(p, 0) for p in def5]])
+        A, B, det = self._terms_vec(O, D, np.array([home]), [ctx], detail=True)
+        return {k: (v[0] if np.ndim(v) == 1 else v[0]) for k, v in det.items()}
 
     def _tables(self):
         """Per-player coefficient arrays for vectorised prediction (row 0 = unknown player)."""
@@ -359,6 +353,8 @@ class RealModel:
         t["trip_rate"] = np.full(n, 0.2)
         t["ft"] = np.full(n, self.league_ft)
         t["mix"] = np.tile(self.league_mix, (n, 1))
+        t["zone_off"] = np.zeros((n, len(ZONES)))
+        t["zone_def"] = np.zeros((n, len(ZONES)))
         for p, i in index.items():
             t["tov_off"][i], t["tov_def"][i] = self.tov.player("off", p), self.tov.player("def", p)
             t["trip_off"][i], t["trip_def"][i] = self.trip.player("off", p), self.trip.player("def", p)
@@ -371,10 +367,13 @@ class RealModel:
             t["ft"][i] = self.ft_pct.get(p, self.league_ft)
             if p in self.zone_mix:
                 t["mix"][i] = self.zone_mix[p]
+            if self.zone is not None:
+                t["zone_off"][i] = self.zone.player("off", p)
+                t["zone_def"][i] = self.zone.player("def", p)
         self._tab = (index, t)
         return self._tab
 
-    def _terms_vec(self, O, D, home, ctx):
+    def _terms_vec(self, O, D, home, ctx, detail: bool = False):
         """Vectorised chance_terms: O, D (N,5) player rows; home (N,) bool; ctx list of names."""
         _, t = self._tables()
         sig = lambda z: 1.0 / (1.0 + np.exp(-z))  # noqa: E731
@@ -396,20 +395,40 @@ class RealModel:
         A = p_trip * (tr * ft).sum(1) * mean_n
         B = p_trip * (tr * (1 - ft)).sum(1) * p_oreb["ft"]
         fr = t["fga_rate"][O]
-        fr = fr / fr.sum(1, keepdims=True)
-        mix = t["mix"][O]  # (N,5,5)
+        mix = t["mix"][O]  # (N,5 players,5 zones)
+        joint = fr[:, :, None] * mix  # player propensity to take a shot from each zone
+        if self.zone is not None:
+            # the lineups decide where shots come from; players split each zone by propensity
+            zl = (self.zone.intercept[None, :] + np.stack([self.zone.fixed("ctx_" + c) for c in ctx])
+                  + hm[:, None] * self.zone.fixed("home")[None, :]
+                  + t["zone_off"][O].sum(1) + t["zone_def"][D].sum(1))
+            pz = np.exp(zl - zl.max(1, keepdims=True))
+            pz /= pz.sum(1, keepdims=True)
+            w_all = joint / joint.sum(1, keepdims=True) * pz[:, None, :]
+        else:
+            w_all = joint / joint.sum((1, 2), keepdims=True)
         base = self.make.intercept + ctx_make + hm * self.make.fixed("home")
         fg_pts = np.zeros(len(O))
+        det = {"p_tov": p_tov, "p_trip": p_trip, "p_fga": p_fga, "p_oreb_fga": np.zeros(len(O)),
+               "p_oreb_ft": p_oreb["ft"]}
         for zi, z in enumerate(ZONES):
             g = ZGROUP_NAMES[ZGROUP[z]]
             mates = t[f"mate_{g}"][O]
             logit = (base[:, None] + self.make.fixed("z_" + z) + t[f"shoot_{g}"][O]
                      + t[f"guard_{g}"][D].sum(1)[:, None] + mates.sum(1)[:, None] - mates)
             pm = sig(logit)
-            w = fr * mix[:, :, zi]
+            w = w_all[:, :, zi]
             fg_pts += (w * pm * (ZONE_PTS[z] + self.and1.get(z, 0.0) * ft)).sum(1)
             B += p_fga * (w * (1 - pm)).sum(1) * p_oreb[z]
+            if detail:
+                det[f"share_{z}"] = w.sum(1)
+                det[f"fg_{z}"] = (w * pm).sum(1) / np.maximum(w.sum(1), 1e-12)
+                det["p_oreb_fga"] = det["p_oreb_fga"] + (w * (1 - pm)).sum(1) * p_oreb[z]
         A += p_fga * fg_pts
+        if detail:
+            det["shooter_share"] = w_all.sum(2)
+            det["fg_pts_per_fga"] = fg_pts
+            return A, B, det
         return A, B
 
     def predict(self, poss: pd.DataFrame) -> np.ndarray:
@@ -427,7 +446,82 @@ class RealModel:
         home = poss.home.values.astype(bool)
         A2, B2 = self._terms_vec(O, D, home, ["oreb"] * len(poss))
         A, B = self._terms_vec(O, D, home, list(poss.start_type.values))
-        return A + B * A2 / (1 - B2)
+        out = A + B * A2 / (1 - B2)
+        if self.resid is not None:
+            out = out + self._resid_predict(poss)
+        return out
+
+    def fit_residual(self, poss: pd.DataFrame, alpha: float) -> "RealModel":
+        """Ridge regression of (actual - structural) points on the ten players, added at prediction."""
+        from sklearn.linear_model import Ridge
+        self.resid = None
+        y = poss.points.values - self.predict(poss)
+        ids = sorted({p for s in pd.concat([poss.off_lineup, poss.def_lineup]).unique() for p in lineup(s)})
+        idx = {p: i for i, p in enumerate(ids)}
+        X = self._resid_X(poss, idx)
+        w = poss.season.map(SEASON_WEIGHT).fillna(1.0).values if "season" in poss else None
+        r = Ridge(alpha=alpha).fit(X, y, sample_weight=w)
+        k = len(CONTEXTS) - 1
+        n = len(ids)
+        self.resid = {"intercept": float(r.intercept_), "ctx": dict(zip(CONTEXTS[1:], r.coef_[:k] * FIXED)),
+                      "home": float(r.coef_[k] * FIXED),
+                      "off": dict(zip(ids, r.coef_[k + 1:k + 1 + n])), "def": dict(zip(ids, r.coef_[k + 1 + n:]))}
+        return self
+
+    @staticmethod
+    def _resid_X(poss, idx):
+        n, k = len(idx), len(CONTEXTS) - 1
+        rows, cols, vals = [], [], []
+        for i, (o, d, st, h) in enumerate(zip(poss.off_lineup.values, poss.def_lineup.values,
+                                               poss.start_type.values, poss.home.values)):
+            if st in CONTEXTS[1:]:
+                rows.append(i), cols.append(CONTEXTS[1:].index(st)), vals.append(FIXED)
+            if h:
+                rows.append(i), cols.append(k), vals.append(FIXED)
+            for p in lineup(o):
+                rows.append(i), cols.append(k + 1 + idx[p]), vals.append(1.0)
+            for p in lineup(d):
+                rows.append(i), cols.append(k + 1 + n + idx[p]), vals.append(1.0)
+        return sparse.csr_matrix((vals, (rows, cols)), shape=(len(poss), k + 1 + 2 * n))
+
+    def _resid_predict(self, poss: pd.DataFrame) -> np.ndarray:
+        r = self.resid
+        out = np.full(len(poss), r["intercept"])
+        out += np.array([r["ctx"].get(c, 0.0) for c in poss.start_type.values])
+        out += poss.home.values.astype(float) * r["home"]
+        out += np.array([sum(r["off"].get(p, 0.0) for p in lineup(s)) for s in poss.off_lineup.values])
+        out += np.array([sum(r["def"].get(p, 0.0) for p in lineup(s)) for s in poss.def_lineup.values])
+        return out
+
+    def player_card(self, pid: int) -> dict:
+        """A player's fitted effects in readable units, at league-average context.
+
+        shoot_* / guard_*: change in make probability (percentage points) on his shots / on shots he defends
+        tov_off, trip_off, oreb_off: change in his team's per-chance turnover, foul-trip and offensive rebound odds
+        """
+        sig = lambda z: 1.0 / (1.0 + np.exp(-z))  # noqa: E731
+        out = {}
+        for g, zs in (("rim", ["rim"]), ("mid", ["short_mid", "long_mid"]), ("three", ["corner3", "above3"])):
+            base = self.make.intercept + np.mean([self.make.fixed("z_" + z) for z in zs])
+            for k in ("shoot", "guard"):
+                out[f"{k}_{g}"] = 100 * (sig(base + self.make.player(f"{k}_{g}", pid)) - sig(base))
+        for name, comp in (("tov", self.tov), ("trip", self.trip), ("oreb", self.oreb)):
+            for side in ("off", "def"):
+                out[f"{name}_{side}"] = 100 * (sig(comp.intercept + comp.player(side, pid)) - sig(comp.intercept))
+        if self.zone is not None:
+            for side in ("off", "def"):
+                zl = self.zone.intercept + self.zone.player(side, pid)
+                p = np.exp(zl) / np.exp(zl).sum()
+                p0 = np.exp(self.zone.intercept) / np.exp(self.zone.intercept).sum()
+                for z, d in zip(ZONES, 100 * (p - p0)):
+                    out[f"zone_{side}_{z}"] = d
+        out["fga_rate"] = self.fga_rate.get(pid, 0.2)
+        out["ft_pct"] = self.ft_pct.get(pid, self.league_ft)
+        out["mix"] = dict(zip(ZONES, self.zone_mix.get(pid, self.league_mix)))
+        if self.resid is not None:
+            out["resid_off"] = 100 * self.resid["off"].get(pid, 0.0)
+            out["resid_def"] = 100 * self.resid["def"].get(pid, 0.0)
+        return out
 
     # ----------------------------------------------------------- persistence
     def save(self, path: Path) -> None:

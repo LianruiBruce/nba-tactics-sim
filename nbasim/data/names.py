@@ -38,18 +38,29 @@ def directory() -> tuple[dict, dict, dict]:
 
 
 def find_player(query: str) -> int:
-    """Player id by (part of) a name, accents ignored; the most recent match wins ties."""
+    """Player id by name: full name, a surname, or word prefixes ('shai gil'); accents ignored."""
     names, _, _ = directory()
     q = _fold(query.strip())
-    exact = [p for p, n in names.items() if _fold(n) == q]
-    if exact:
-        return exact[-1]
-    hits = [p for p, n in names.items() if q in _fold(n)]
-    if not hits:
-        raise KeyError(f"no player matches {query!r}")
-    if len({names[p] for p in hits}) > 1:
-        raise KeyError(f"{query!r} is ambiguous: " + ", ".join(sorted({names[p] for p in hits})[:8]))
-    return hits[-1]
+    qt = q.replace("-", " ").split()
+    tiers: list[list[int]] = [[], [], [], []]
+    for p, n in names.items():
+        f = _fold(n)
+        toks = f.replace("-", " ").replace(".", "").split()
+        if f == q:
+            tiers[0].append(p)
+        elif len(qt) == 1 and qt[0] in toks:
+            tiers[1].append(p)
+        elif all(any(t.startswith(x) for t in toks) for x in qt):
+            tiers[2].append(p)
+        elif q in f:
+            tiers[3].append(p)
+    for hits in tiers:
+        if not hits:
+            continue
+        if len({names[p] for p in hits}) > 1:
+            raise KeyError(f"{query!r} is ambiguous: " + ", ".join(sorted({names[p] for p in hits})[:8]))
+        return hits[-1]
+    raise KeyError(f"no player matches {query!r}")
 
 
 def player_name(pid: int) -> str:
