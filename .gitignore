@@ -6,3 +6,5 @@ runs/
 replays/*
 !replays/sample.json
 data/raw/
+data/processed/
+data/nba/
