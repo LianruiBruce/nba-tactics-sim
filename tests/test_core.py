@@ -174,3 +174,17 @@ def test_scripted_team_not_exposed(lineups):
     env = NBAEnv(lineups["stars_a"], lineups["stars_b"], quarter_len=60, scripted=(1,))
     obs, _ = env.reset(seed=1)
     assert set(obs) == {f"a_{k}" for k in range(5)}
+
+
+def test_lineup_terms_sum_over_the_floor():
+    lu = load_lineups()
+    a, b = lu["stars_a"].players, lu["stars_b"].players
+    assert not Engine(a, b, seed=0).lineup_make.any()  # 2K-only players add nothing
+    zero = {f"{k}_{z}": 0.0 for k in ("guard", "mate") for z in ("rim", "mid", "three")}
+    zero |= {"tov_off": 0.0, "tov_def": 0.0, "trip_off": 0.0, "trip_def": 0.0}
+    a = [p.model_copy(update={"real": zero | {"mate_three": 0.1}}) for p in a]
+    b = [p.model_copy(update={"real": zero | {"guard_three": -0.05, "tov_def": 0.02}}) for p in b]
+    eng = Engine(a, b, seed=0)
+    assert abs(eng.lineup_make[0, 2] - (4 * 0.1 - 5 * 0.05)) < 1e-12
+    assert abs(eng.lineup_make[5, 2] - 4 * 0.0) < 1e-12
+    assert abs(eng.lineup_tov[0] - 5 * 0.02) < 1e-12

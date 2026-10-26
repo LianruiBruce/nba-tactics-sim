@@ -90,6 +90,9 @@ class Player(_Group):
     nba_id: int | None = None
     usage: float | None = None     # share weight of his team's shots, from real data
     zone_pref: dict[str, float] | None = None  # log(his shot mix / league mix) by zone, from real data
+    # log-odds terms measured from real games (nbasim.realplayers): guard_/mate_ by zone group
+    # (rim, mid, three) on shots, tov_/trip_ off and def; the engine sums them over the ten on the floor
+    real: dict[str, float] | None = None
 
 
 class Roster(BaseModel):
