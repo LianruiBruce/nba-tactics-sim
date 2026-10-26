@@ -40,7 +40,9 @@ def test_possessions_and_lineups():
         act(14, "3pt", H, 16, result="Made", clock="PT10M30.00S"),
     ]
     poss, check = possessions_for_game("g", acts, box())
-    assert [p.offense for p in poss] == [H, A, H, A, H]
+    # the last made shot hands A an empty possession before the period ends
+    assert [p.offense for p in poss] == [H, A, H, A, H, A]
+    assert poss[-1].fga == 0 and poss[-1].points == 0
     p0 = poss[0]
     assert (p0.fga, p0.oreb, p0.fta, p0.points) == (2, 1, 1, 3)
     assert p0.shots[1]["zone"] == "rim"
@@ -76,5 +78,5 @@ def test_later_period_starters_inferred():
     q2_first = [p for p in poss if p.period == 2][0]
     # 16 was subbed out in Q2 before being subbed in, so he started Q2; 13-15 carried over silently
     assert set(q2_first.off_lineup) == {12, 13, 14, 15, 16}
-    assert [p for p in poss if p.period == 2][-1].off_lineup == (11, 12, 13, 14, 15)
+    assert [p for p in poss if p.period == 2 and p.offense == H][-1].off_lineup == (11, 12, 13, 14, 15)
     assert check["bad_lineups"] == 0

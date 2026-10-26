@@ -20,6 +20,7 @@ from dataclasses import dataclass, field
 from nbasim import court
 
 CLOCK_RE = re.compile(r"PT(?:(\d+)M)?([\d.]+)S")
+RETAINED_FT = ("flagrant", "clear path", "clear-path", "away-from-play", "transition take")
 SKIP_ACTOR = {"timeout", "period", "game", "memo", "stoppage", "instantreplay", "ejection"}
 
 
@@ -50,7 +51,7 @@ def is_fga(a: dict) -> bool:
 def ft_kind(a: dict) -> tuple[bool, int, int]:
     """(technical, n, of) for a free throw subType such as '1 of 2', 'flagrant 2 of 2', 'technical'."""
     sub = (a.get("subType") or "").lower()
-    tech = "technical" in sub
+    tech = "technical" in sub or (a.get("descriptor") or "").lower() == "technical"
     m = re.search(r"(\d) of (\d)", sub)
     n, of = (int(m.group(1)), int(m.group(2))) if m else (1, 1)
     return tech, n, of
@@ -259,7 +260,9 @@ def possessions_for_game(game_id: str, actions: list[dict], box: dict) -> tuple[
                 if made(a):
                     cur.ftm += 1
                     cur.points += 1
-                flagrant = any(k in (a.get("subType") or "").lower() for k in ("flagrant", "clear path"))
+                # these free throws come with the ball back, so the possession goes on
+                kind = f'{a.get("subType") or ""} {a.get("descriptor") or ""}'.lower()
+                flagrant = any(k in kind for k in RETAINED_FT)
                 if n == of and made(a) and not flagrant:
                     cut, last_end = True, "made_ft"
                 else:
@@ -267,6 +270,13 @@ def possessions_for_game(game_id: str, actions: list[dict], box: dict) -> tuple[
             elif t == "turnover":
                 cur.tov += 1
                 cut, last_end = True, "turnover"
+        if cur is not None and cut and pacts:
+            # the other team got the ball but the period ended before it could act
+            team = other[cur.offense]
+            end = clock_seconds(pacts[-1].get("clock"))
+            poss.append(Possession(game_id, period, team, cur.offense, cur.end, end,
+                                   tuple(sorted(on[team])), tuple(sorted(on[cur.offense])),
+                                   start_type=last_end))
         prev_end = {k: set(v) for k, v in on.items()}
 
     def box_points(side):

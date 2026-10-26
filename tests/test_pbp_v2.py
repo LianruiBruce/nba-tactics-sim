@@ -37,10 +37,10 @@ def test_v2_game():
     # starters on court before any event: 11-15 vs 21-25 (25 never appears)
     acts, box = convert("g", COLS, rows, H, A, 8, 0, shots)
     poss, check = possessions_for_game("g", acts, box)
-    assert [p.offense for p in poss] == [H, A, H, A, H, A, H]
+    assert [p.offense for p in poss] == [H, A, H, A, H, A, H, A]
     assert poss[0].points == 3 and poss[0].shots[0]["zone"] == "corner3"
     assert poss[2].fta == 2 and poss[2].oreb == 0      # placeholder rebound dropped
     assert poss[3].tov == 1 and 26 in poss[3].off_lineup
     assert poss[5].oreb == 1 and poss[5].fga == 2
     assert check["pbp_home_pts"] == 8 == check["poss_home_pts"]
-    assert check["bad_lineups"] == 7  # away has only 21, 22/26, 23, 24 seen in Q1 -> 4 players
+    assert check["bad_lineups"] == 8  # away has only 21, 22/26, 23, 24 seen in Q1 -> 4 players

@@ -60,6 +60,32 @@ pytest
 
 还没对齐的：突破次数偏多（约 84 次/队/场，NBA 约 50），传球略少（2.5 次/回合，NBA 约 2.8），全明星对局节奏偏慢。
 
+## 真实比赛数据
+
+目标是让模拟器能回答真实球队的问题（阵容和对位推演），并在留出的真实赛季上回测。方案见 https://claude.ai/artifact/FsEAbrqY8r1NyrLLacFW49 。
+
+数据来自 NBA.com 的公开接口，存放在仓库的 `nba-data` 分支（2022-23 至 2026-27，每季约 50 MB）：
+
+```bash
+python scripts/fetch_nba.py                       # 在家用电脑上抓取（stats.nba.com 常屏蔽云服务器 IP）
+git fetch origin nba-data && git worktree add ../nba-data origin/nba-data
+ln -s ../../nba-data/data/nba data/nba            # 或直接复制
+pip install -e ".[data]"
+python scripts/build_dataset.py                   # 生成 data/processed/<赛季>/possessions.parquet、shots.parquet
+```
+
+`nbasim/data/pbp.py` 把逐场 play-by-play 切成回合，并通过换人记录追踪场上十人（每节首发由换人前的出场记录推断）。第 1 步验收结果：
+
+| 赛季 | 场次 | 得分与官方一致 | 每队回合数 vs stats.nba.com（平均 / 最大误差） | 阵容不完整的回合 |
+| --- | --- | --- | --- | --- |
+| 2022-23 | 1230 | 100% | +0.07% / 0.23% | 0 |
+| 2023-24 | 1230 | 100% | +0.08% / 0.21% | 0 |
+| 2024-25 | 1230 | 100% | +0.08% / 0.35% | 16（0.006%） |
+| 2025-26 | 1230 | 100% | +0.09% / 0.24% | 0 |
+| 2026-27（截至 10 月 26 日） | 43 | 100% | +0.49% / 1.69% | 0 |
+
+阵容层面，回合数最多的 200 套五人组里，按我们切出的回合算出的净效率和 NBA.com 的 NET_RATING 相关系数为 0.98（2024-25、2025-26）。
+
 ## 结构
 
 | 路径 | 内容 |
