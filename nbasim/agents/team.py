@@ -43,6 +43,7 @@ TEND = {
     "touch_decay": 0.05,
     "floater_min": 5.0,       # ft from the rim; inside this a driver keeps going at help
     "star_power": 3.0,        # fair usage share grows with scoring quality to this power
+    "zone_pref_weight": 0.3,  # pts of option value per unit of log(real shot mix / league mix)
     "usage_weight": 1.5,      # pts of option value per unit of usage share above fair      # per second a touch lasts beyond 2.5 s
 }
 TEND.update(resolve.load_tuned().get("tendencies", {}))
@@ -120,6 +121,9 @@ class TeamBrain:
             # the share of the team's possessions each player "should" use: better
             # scorers get more, but nobody gets the ball every time
             w = {i: q ** TEND["star_power"] for i, q in indiv.items()}
+            if all(eng.players[i].usage for i in members(team)):
+                # measured from real games: how often each player ends a possession with a shot
+                w = {i: eng.players[i].usage for i in members(team)}
             self.fair_usage = {i: v / sum(w.values()) for i, v in w.items()}
         key = (sum(eng.possessions), eng.off)
         if key != self.poss_key:
@@ -541,6 +545,8 @@ class TeamBrain:
         zone = court.shot_zone(hl)
         bias = TEND["bias_three"] if zone in ("corner3", "above3") else TEND[f"bias_{zone}"]
         skill = resolve.rel(resolve.zone_skill(p, zone)) * TEND["skill_tendency"]
+        if p.zone_pref:
+            skill += TEND["zone_pref_weight"] * p.zone_pref[zone]
         hog = TEND["usage_weight"] * self._usage_gap(eng, h)
         options["shoot"] = ep_shot + bias + skill + (0.2 if sc <= 2.5 else 0.0) - hog
 
@@ -585,6 +591,8 @@ class TeamBrain:
                 p_beat = resolve.sigmoid((quick - stop) / 12.0 - 0.4)
                 ep_drive = p_beat * max(ep_rim, 1.15) + (1 - p_beat) * 0.85
             drive_skill = resolve.rel(0.5 * (p.inside_scoring.layup + p.playmaking.ball_handle)) * TEND["skill_tendency"]
+            if p.zone_pref:
+                drive_skill += TEND["zone_pref_weight"] * p.zone_pref["rim"]
             # one good drive per trip is normal (NBA: ~0.5 per possession); re-attacking
             # the same set defense right after a failed drive rarely is
             redrive = TEND["redrive_penalty"] * self.drives

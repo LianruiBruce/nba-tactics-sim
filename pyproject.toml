@@ -13,6 +13,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
+data = ["pandas>=2.0", "pyarrow>=14"]
 
 [build-system]
 requires = ["setuptools>=68"]

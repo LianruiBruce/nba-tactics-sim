@@ -86,6 +86,10 @@ class Player(_Group):
     defense: Defense
     rebounding: Rebounding
     athleticism: Athleticism
+    # set when skills come from real play-by-play (nbasim.realplayers)
+    nba_id: int | None = None
+    usage: float | None = None     # share weight of his team's shots, from real data
+    zone_pref: dict[str, float] | None = None  # log(his shot mix / league mix) by zone, from real data
 
 
 class Roster(BaseModel):

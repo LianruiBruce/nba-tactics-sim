@@ -5,3 +5,7 @@ __pycache__/
 runs/
 replays/*
 !replays/sample.json
+data/raw
+data/processed
+data/nba
+data/backtest
