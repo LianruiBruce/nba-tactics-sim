@@ -56,6 +56,7 @@ def stats_games(season: str):
     for r in log.itertuples():
         g = teams.setdefault(r.GAME_ID, {})
         g["home" if " vs. " in r.MATCHUP else "away"] = (int(r.TEAM_ID), int(r.PTS))
+        g["date"] = r.GAME_DATE
     sc = stats_table(season, "shotchart")
     shots: dict[str, dict] = {}
     if sc is not None:
@@ -63,10 +64,10 @@ def stats_games(season: str):
             shots.setdefault(row["GAME_ID"], {})[row["GAME_EVENT_ID"]] = row
     for rec in read_jsonl(files):
         gid = rec["gameId"]
-        if "v2" not in rec or gid not in teams or len(teams[gid]) != 2:
+        if "v2" not in rec or gid not in teams or len(teams[gid]) != 3:
             continue  # TODO: playbyplayv3-only games
         (home, hp), (away, ap) = teams[gid]["home"], teams[gid]["away"]
-        acts, box = convert(gid, columns, rec["v2"], home, away, hp, ap, shots.get(gid))
+        acts, box = convert(gid, columns, rec["v2"], home, away, hp, ap, shots.get(gid), teams[gid]["date"])
         yield gid, acts, box
 
 
@@ -96,8 +97,11 @@ def build(season: str) -> pd.DataFrame:
             d = asdict(p)
             shots = d.pop("shots")
             d["poss_id"] = f"{gid}-{i:03d}"
+            d["date"] = (box.get("gameEt") or box.get("date") or "")[:10]
+            d["season"] = season
             d["off_lineup"] = "-".join(map(str, p.off_lineup))
             d["def_lineup"] = "-".join(map(str, p.def_lineup))
+            d["events"] = ";".join(p.events)
             poss_rows.append(d)
             for s in shots:
                 s["poss_id"] = d["poss_id"]

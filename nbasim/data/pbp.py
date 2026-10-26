@@ -110,6 +110,10 @@ class Possession:
     tov: int = 0
     oreb: int = 0
     start_type: str = ""
+    home: bool = False
+    # ordered chance-level events: "T|pid" turnover, "F|pid|zone|made" field goal attempt,
+    # "FT|pid|n|of|made|tag" free throw (tag a = and-one, r = ball retained), "R|pid" offensive rebound
+    events: list = field(default_factory=list)
     shots: list = field(default_factory=list)
 
 
@@ -193,6 +197,8 @@ def possessions_for_game(game_id: str, actions: list[dict], box: dict) -> tuple[
         cut = False  # offense scored on its last chance: next action starts a new possession
         last_end = "period_start"
         pending_and1 = None
+        after_made_fg = False
+        ft_between = False  # inside a free throw trip (after a non-final attempt)
         for a in pacts:
             t = a.get("actionType")
             rem = clock_seconds(a.get("clock"))
@@ -210,8 +216,11 @@ def possessions_for_game(game_id: str, actions: list[dict], box: dict) -> tuple[
 
             if t == "rebound" and cur is not None:
                 reb_team = a.get("teamId")
-                if reb_team == cur.offense:
+                if ft_between:
+                    pass  # placeholder team rebound between free throws of one trip
+                elif reb_team == cur.offense:
                     cur.oreb += 1
+                    cur.events.append(f"R|{a.get('personId') or 0}")
                 elif reb_team:
                     cut = True
                     last_end = "def_rebound"
@@ -227,7 +236,7 @@ def possessions_for_game(game_id: str, actions: list[dict], box: dict) -> tuple[
                 start_type = last_end if cur is not None else "period_start"
                 cur = Possession(game_id, period, team, other[team], rem, rem,
                                  tuple(sorted(on[team])), tuple(sorted(on[other[team]])),
-                                 start_type=start_type)
+                                 start_type=start_type, home=team == lu.home)
                 poss.append(cur)
                 cut, last_end = False, "other"
             elif (tuple(sorted(on[team])) != cur.off_lineup
@@ -235,6 +244,8 @@ def possessions_for_game(game_id: str, actions: list[dict], box: dict) -> tuple[
                 cur.lineup_changed = True
             cur.end = rem
             pending_and1 = None
+            was_made_fg, after_made_fg = after_made_fg, False
+            ft_between = False
             if t in ("2pt", "3pt"):
                 cur.fga += 1
                 cur.fg3a += t == "3pt"
@@ -249,7 +260,9 @@ def possessions_for_game(game_id: str, actions: list[dict], box: dict) -> tuple[
                     "off_lineup": tuple(sorted(on[team])), "def_lineup": tuple(sorted(on[other[team]])),
                 }
                 cur.shots.append(shot)
+                cur.events.append(f"F|{a.get('personId')}|{shot['zone']}|{int(made(a))}")
                 if made(a):
+                    after_made_fg = True
                     cur.fgm += 1
                     cur.fg3m += t == "3pt"
                     cur.points += 3 if t == "3pt" else 2
@@ -263,12 +276,16 @@ def possessions_for_game(game_id: str, actions: list[dict], box: dict) -> tuple[
                 # these free throws come with the ball back, so the possession goes on
                 kind = f'{a.get("subType") or ""} {a.get("descriptor") or ""}'.lower()
                 flagrant = any(k in kind for k in RETAINED_FT)
+                tag = "a" if (was_made_fg and n == of == 1) else ("r" if flagrant else "")
+                ft_between = n < of
+                cur.events.append(f"FT|{a.get('personId')}|{n}|{of}|{int(made(a))}|{tag}")
                 if n == of and made(a) and not flagrant:
                     cut, last_end = True, "made_ft"
                 else:
                     pending_and1 = team if n < of else None
             elif t == "turnover":
                 cur.tov += 1
+                cur.events.append(f"T|{a.get('personId') or 0}")
                 cut, last_end = True, "turnover"
         if cur is not None and cut and pacts:
             # the other team got the ball but the period ended before it could act
@@ -276,7 +293,7 @@ def possessions_for_game(game_id: str, actions: list[dict], box: dict) -> tuple[
             end = clock_seconds(pacts[-1].get("clock"))
             poss.append(Possession(game_id, period, team, cur.offense, cur.end, end,
                                    tuple(sorted(on[team])), tuple(sorted(on[cur.offense])),
-                                   start_type=last_end))
+                                   start_type=last_end, home=team == lu.home))
         prev_end = {k: set(v) for k, v in on.items()}
 
     def box_points(side):

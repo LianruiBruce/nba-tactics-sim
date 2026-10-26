@@ -36,7 +36,7 @@ def _pid(r: dict, n: int, team_ids: set) -> int | None:
 
 
 def convert(game_id: str, columns: list[str], rows: list[list], home: int, away: int,
-            home_pts: int, away_pts: int, shots: dict | None = None) -> tuple[list[dict], dict]:
+            home_pts: int, away_pts: int, shots: dict | None = None, date: str = "") -> tuple[list[dict], dict]:
     """Returns (actions, box) in the liveData shape. `shots` maps EVENTNUM -> shotchart row dict."""
     team_ids = {home, away}
     shots = shots or {}
@@ -103,7 +103,7 @@ def convert(game_id: str, columns: list[str], rows: list[list], home: int, away:
         elif et == VIOLATION:
             add(**base, actionType="violation", teamId=t1, personId=p1, description=desc)
 
-    box = {"homeTeam": {"teamId": home, "score": home_pts,
+    box = {"date": date, "homeTeam": {"teamId": home, "score": home_pts,
                         "players": [{"personId": p, "starter": "0"} for p in sorted(players[home])]},
            "awayTeam": {"teamId": away, "score": away_pts,
                         "players": [{"personId": p, "starter": "0"} for p in sorted(players[away])]}}
