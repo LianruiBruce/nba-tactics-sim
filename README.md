@@ -116,11 +116,24 @@ python scripts/scout.py --team OKC --season 2025-26   # -> data/reports/OKC_2025
 
 `whatif.py` 给出两套阵容互打的每回合得分、失误、罚球、出手分布、各区命中、前场篮板、出手分配，以及把候选人换进 A 阵容每个位置后的净效率变化。`scout.py` 生成对手球探报告：效率和排名、攻防投篮结构对比联盟、NBA.com 战术类型效率、常用五人组（实际和模型预期净效率）、关键球员分项评分，以及据此自动生成的比赛策略。
 
+### 真实球员接入模拟引擎
+
+`nbasim/realplayers.py` 把球员模型测出的各项 log-odds 换算成引擎用的数值（按 `resolve.py` 的公式反推，联盟平均球员对应 70），并带上真实出手占比和各区出手分布，球队 AI 按这些分布选择出手。
+
+```bash
+python scripts/simulate.py --real --quarters 4 \
+    --a "Gilgeous-Alexander, Jalen Williams, Dort, Holmgren, Hartenstein" --b "Brunson, Bridges, Hart, Anunoby, Towns"
+python scripts/engine_check.py --pairs 15 --games 10   # 30 支常用五人组互打 150 场，对照真实数据
+```
+
+`engine_check.py` 的结果（2025-26 各队最常用五人组）：联盟口径正常（每回合 1.16 分、节奏 102、三分出手占比 43%）；逐个球员看，三分出手占比和真实相关 0.81，命中率相关 0.55（每人约 100 次出手，噪声不小）。但五人组之间的强弱差距，引擎还没有复现好：引擎净效率和球员模型预测只相关 0.13，和真实相关 0.27（球员模型本身是 0.43），引擎会压平明星阵容的优势。所以阵容推演目前以 `whatif.py`（球员模型）为准，引擎用于看回放和做 RL 训练。
+
 ## 结构
 
 | 路径 | 内容 |
 | --- | --- |
 | `nbasim/court.py` | 全场 94×50 英尺坐标，各队进攻方向的局部坐标，三分线、出手区域、战术点位 |
+| `nbasim/realplayers.py` | 由真实比赛数据生成引擎球员（数值、出手占比、出手分布） |
 | `nbasim/players.py` | 2K27 属性分组的 Pydantic 模型，加载球员与阵容 |
 | `nbasim/resolve.py` | 命中、盖帽、犯规、抢断、篮板等概率模型（以 2K 数值相对 70 分的 logistic 形式） |
 | `nbasim/engine.py` | 10 Hz 确定性全场引擎：移动与碰撞、计时、规则、死球与罚球 |

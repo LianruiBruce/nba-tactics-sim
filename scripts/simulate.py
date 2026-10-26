@@ -3,6 +3,8 @@
   python scripts/simulate.py                         # one quarter, stars_a vs stars_b -> replays/sample.json
   python scripts/simulate.py --quarters 4 --seed 7   # a full game
   python scripts/simulate.py --scheme-b switch        # team B switches every screen
+  python scripts/simulate.py --real --a "Gilgeous-Alexander, Jalen Williams, Dort, Holmgren, Hartenstein" \
+      --b "Brunson, Bridges, Hart, Anunoby, Towns"    # real players, skills from play-by-play
 
 Open viewer/index.html to watch the replay.
 """
@@ -41,11 +43,16 @@ def main() -> None:
     ap.add_argument("--quarters", type=int, default=1)
     ap.add_argument("--scheme-a", default="drop", choices=["drop", "switch"])
     ap.add_argument("--scheme-b", default="drop", choices=["drop", "switch"])
+    ap.add_argument("--real", action="store_true", help="--a/--b are comma-separated real player names")
     ap.add_argument("--out", default="replays/sample.json")
     args = ap.parse_args()
 
-    lineups = load_lineups()
-    a, b = lineups[args.a], lineups[args.b]
+    if args.real:
+        from nbasim.realplayers import real_lineup
+        a, b = real_lineup(args.a), real_lineup(args.b)
+    else:
+        lineups = load_lineups()
+        a, b = lineups[args.a], lineups[args.b]
     res = play_game(a, b, seed=args.seed, quarters=args.quarters,
                     scheme_a=args.scheme_a, scheme_b=args.scheme_b, record=True)
     eng = res.engine
