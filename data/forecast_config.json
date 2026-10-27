@@ -1,10 +1,27 @@
 {
   "version": 1,
   "note": "Fixed before the 2026-27 forecasts. Hyperparameters chosen on games before 2025-10-01; sigma = game-margin RMSE of each model in the 2025-26 walk-forward (scripts/walkforward.py). Change only with a new version number and a note in docs/forecasting.md.",
-  "hyper": {"real_C": 0.006, "resid_alpha": 9000, "rapm_alpha": 2000, "team_alpha": 1000},
-  "sigma": {"real": 12.0, "rapm": 12.0, "team": 12.0},
-  "rotation": {"games": 10, "half_life": 4.0, "cover": 0.9, "max_units": 30, "missing_games": 2},
+  "hyper": {
+    "real_C": 0.006,
+    "resid_alpha": 9000,
+    "rapm_alpha": 2000,
+    "team_alpha": 1000
+  },
+  "sigma": {
+    "real": 14.65,
+    "rapm": 14.65,
+    "team": 15.83
+  },
+  "rotation": {
+    "games": 10,
+    "half_life": 4.0,
+    "cover": 0.9,
+    "max_units": 30,
+    "missing_games": 2
+  },
   "refit_days": 7,
   "lines_max_age_hours": 36,
-  "scoring": {"min_unit_possessions": 200}
+  "scoring": {
+    "min_unit_possessions": 200
+  }
 }

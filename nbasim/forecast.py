@@ -244,3 +244,20 @@ def lineup_metrics(df: pd.DataFrame, sources: list[str], min_poss: int = 1) -> p
                   "net_rmse": float(np.sqrt(np.average((a - p) ** 2, weights=ww))),
                   "net_corr": float(cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1]))}
     return pd.DataFrame(out).T
+
+
+def paired_units(df: pd.DataFrame, a: str, b: str, min_poss: int = 1, n: int = 4000, seed: int = 0):
+    """Possession-weighted mean of squared net-rating error, a minus b, resampling units."""
+    df = df[((df.n_off + df.n_def) >= min_poss) & (df.n_off > 0) & (df.n_def > 0)]
+    if f"net_{a}" not in df or f"net_{b}" not in df:
+        return None
+    df = df.dropna(subset=[f"net_{a}", f"net_{b}"])
+    if len(df) < 5:
+        return None
+    actual = 100 * (df.pts_off / df.n_off - df.pts_def / df.n_def)
+    d = ((actual - df[f"net_{a}"]) ** 2 - (actual - df[f"net_{b}"]) ** 2).values
+    w = (df.n_off + df.n_def).values.astype(float)
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, len(d), size=(n, len(d)))
+    boot = (d[idx] * w[idx]).sum(1) / w[idx].sum(1)
+    return len(d), float((d * w).sum() / w.sum()), float(np.quantile(boot, 0.025)), float(np.quantile(boot, 0.975))

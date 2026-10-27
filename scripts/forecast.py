@@ -334,12 +334,12 @@ def md(df: pd.DataFrame, index: bool = True) -> str:
     return "\n".join([head, sep] + rows)
 
 
-def fmt_paired(r, unit: str) -> str:
+def fmt_paired(r, unit: str, what: str = "场") -> str:
     if r is None:
         return "样本不足"
     n, m, lo, hi = r
     verdict = "显著更好" if hi < 0 else ("显著更差" if lo > 0 else "未分胜负")
-    return f"{m:+.3f}{unit}（95% 区间 {lo:+.3f} 到 {hi:+.3f}，{n} 场）— {verdict}"
+    return f"{m:+.3f}{unit}（95% 区间 {lo:+.3f} 到 {hi:+.3f}，{n} {what}）— {verdict}"
 
 
 def cmd_score(args, cfg, quiet: bool = False) -> None:
@@ -397,6 +397,10 @@ def cmd_score(args, cfg, quiet: bool = False) -> None:
               "每场赛前列出每队最可能的 5 套五人组和预期净效率（每 100 回合，对手按其预计轮换）。"
               "这里把每批里同一五人组的实际回合合在一起，按回合数加权比较。单周样本很小，看累计。", "",
               md(lm), ""]
+        for s in ("rapm", "team"):
+            L.append(f"- 我们的模型减去 {SOURCE_CN[s]}（净效率平方误差，按五人组抽样）："
+                     f"{fmt_paired(F.paired_units(ex, OURS, s), '', '个五人组')}")
+        L.append("")
     if not cond.empty:
         mods = [c[5:] for c in cond if c.startswith("pred_")]
         cu = cond_units(cond, mods)
@@ -407,6 +411,11 @@ def cmd_score(args, cfg, quiet: bool = False) -> None:
               f"用每批冻结的模型，按实际上场的十个人预测每个回合，赛季累计后比较五人组净效率"
               f"（至少 {cfg['scoring']['min_unit_possessions']} 回合的五人组）。这和 backtest.py 的阵容指标同一口径。", "",
               md(lm) if not lm.empty else "还没有五人组达到回合数门槛。", ""]
+        for s in ("rapm", "team"):
+            if s in mods:
+                r = F.paired_units(cu, OURS, s, cfg["scoring"]["min_unit_possessions"])
+                L.append(f"- 我们的模型减去 {SOURCE_CN[s]}（净效率平方误差，按五人组抽样）：{fmt_paired(r, '', '个五人组')}")
+        L.append("")
     L += ["## 每场明细（最近 30 场）", ""]
     cols = ["date", "away_tri", "home_tri", "actual_margin"] + [f"margin_{s}" for s in sources if f"margin_{s}" in games] \
         + [f"wp_{s}" for s in sources if f"wp_{s}" in games] + ["batch"]
