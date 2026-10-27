@@ -9,3 +9,6 @@ data/raw
 data/processed
 data/nba
 data/backtest
+data/lines
+data/models/forecast
+forecasts/

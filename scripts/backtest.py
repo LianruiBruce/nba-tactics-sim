@@ -24,12 +24,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy import sparse
-from sklearn.linear_model import Ridge
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from nbasim.realmodel import CONTEXTS, SEASON_WEIGHT, RealModel, lineup  # noqa: E402
+from nbasim.baselines import ContextModel, RidgeModel  # noqa: E402
+from nbasim.realmodel import SEASON_WEIGHT, RealModel  # noqa: E402
 
 PROC = ROOT / "data" / "processed"
 SEASONS = ["2022-23", "2023-24", "2024-25", "2025-26"]
@@ -39,58 +38,6 @@ def load(seasons) -> pd.DataFrame:
     df = pd.concat([pd.read_parquet(PROC / s / "possessions.parquet") for s in seasons], ignore_index=True)
     df["w"] = df.season.map(SEASON_WEIGHT).fillna(1.0)
     return df
-
-
-def ctx_matrix(df: pd.DataFrame) -> sparse.csr_matrix:
-    cols = [(df.start_type == c).values.astype(float) for c in CONTEXTS[1:]] + [df.home.values.astype(float)]
-    return sparse.csr_matrix(np.column_stack(cols))
-
-
-def onehot_lineups(df: pd.DataFrame, index: dict, cols: list[str]) -> sparse.csr_matrix:
-    rows, cs = [], []
-    width = len(index)
-    for k, c in enumerate(cols):
-        for i, s in enumerate(df[c].values):
-            for p in lineup(s) if isinstance(s, str) else [s]:
-                j = index.get(p)
-                if j is not None:
-                    rows.append(i)
-                    cs.append(k * width + j)
-    return sparse.csr_matrix((np.ones(len(rows)), (rows, cs)), shape=(len(df), width * len(cols)))
-
-
-class RidgeModel:
-    """Linear ridge on context + one-hot blocks (team ids or player ids)."""
-
-    def __init__(self, kind: str, alpha: float):
-        self.kind, self.alpha = kind, alpha
-
-    def _X(self, df):
-        if self.kind == "team":
-            return sparse.hstack([ctx_matrix(df) * 10, onehot_lineups(df, self.index, ["offense", "defense"])]).tocsr()
-        return sparse.hstack([ctx_matrix(df) * 10, onehot_lineups(df, self.index, ["off_lineup", "def_lineup"])]).tocsr()
-
-    def fit(self, df):
-        if self.kind == "team":
-            ids = sorted(set(df.offense) | set(df.defense))
-        else:
-            ids = sorted({p for s in pd.concat([df.off_lineup, df.def_lineup]).unique() for p in lineup(s)})
-        self.index = {p: i for i, p in enumerate(ids)}
-        self.m = Ridge(alpha=self.alpha).fit(self._X(df), df.points.values, sample_weight=df.w.values)
-        return self
-
-    def predict(self, df):
-        return self.m.predict(self._X(df))
-
-
-class ContextModel:
-    def fit(self, df):
-        self.means = df.groupby(["start_type", "home"]).apply(lambda g: np.average(g.points, weights=g.w)).to_dict()
-        self.overall = np.average(df.points, weights=df.w)
-        return self
-
-    def predict(self, df):
-        return np.array([self.means.get((s, h), self.overall) for s, h in zip(df.start_type, df.home)])
 
 
 def tune_ridge(kind, train, grid):

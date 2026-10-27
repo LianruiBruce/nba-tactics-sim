@@ -66,6 +66,8 @@ pytest
 
 **每个工具的完整命令和真实示例输出见 [docs/usage.md](docs/usage.md)。**
 
+**2026-27 赛季的公开前瞻预测、对账规则和训练路线见 [docs/forecasting.md](docs/forecasting.md)，预测存档和记分牌在 [`forecasts` 分支](https://github.com/LianruiBruce/nba-tactics-sim/tree/forecasts)。**
+
 数据来自 NBA.com 的公开接口，存放在仓库的 `nba-data` 分支（2022-23 至 2026-27，每季约 50 MB）：
 
 ```bash

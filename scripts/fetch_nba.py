@@ -8,6 +8,7 @@ Sources (free, no key):
 stats.nba.com often blocks cloud IPs, so run this on a home machine:
 
     python scripts/fetch_nba.py --seasons 2022-23 2023-24 2024-25 2025-26 2026-27
+    python scripts/fetch_nba.py --seasons 2026-27 --refresh     # during the season: new games + schedule
 
 Per-game play-by-play comes from cdn.nba.com when it answers; if the CDN refuses
 (403), it falls back to stats.nba.com playbyplayv2 (plus playbyplayv3 when v2 is
@@ -19,6 +20,7 @@ Then everything is packed into data/nba/<season>/:
     boxscores.jsonl.gz  cdn liveData box score per game
     pbp_stats.jsonl.gz  stats.nba.com play-by-play per game (when the CDN refused)
     stats/<name>.json.gz one file per stats.nba.com call
+    schedule.json.gz    cdn scheduleLeagueV2 (with --refresh; the CDN only has the current season)
 """
 from __future__ import annotations
 
@@ -40,6 +42,7 @@ OUT = ROOT / "data" / "nba"
 
 CDN_PBP = "https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_{gid}.json"
 CDN_BOX = "https://cdn.nba.com/static/json/liveData/boxscore/boxscore_{gid}.json"
+CDN_SCHEDULE = "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2.json"
 STATS = "https://stats.nba.com/stats/{endpoint}?{query}"
 
 STATS_HEADERS = {
@@ -168,13 +171,20 @@ def fetch_season_stats(season: str, season_type: str = "Regular Season") -> None
 
 
 def season_game_ids(season: str) -> list[str]:
-    """Regular-season game ids from the team game log, else the standard 1..1230 range."""
+    """Regular-season game ids from the team game log, else the schedule, else the standard 1..1230 range."""
     path = RAW / season / "stats" / "gamelog_team.json.gz"
     if path.exists():
         js = json.loads(gzip.decompress(path.read_bytes()))
         rs = js["resultSets"][0]
         idx = rs["headers"].index("GAME_ID")
         ids = sorted({row[idx] for row in rs["rowSet"]})
+        if ids:
+            return ids
+    sched = OUT / season / "schedule.json.gz"
+    if sched.exists():   # finished regular-season games from the schedule
+        js = json.loads(gzip.decompress(sched.read_bytes()))
+        ids = sorted(g["gameId"] for d in js["leagueSchedule"]["gameDates"] for g in d["games"]
+                     if g["gameId"].startswith("002") and g.get("gameStatus") == 3)
         if ids:
             return ids
     yy = season[2:4]
@@ -291,6 +301,29 @@ def pack(season: str, cdn_ids: list[str], stats_ids: list[str]) -> None:
     print(f"  packed {len(cdn_ids) + len(stats_ids)} games -> {out} {sizes}")
 
 
+def refresh(season: str) -> None:
+    """Drop the season-level stats cache (game log, season totals) so they are fetched again,
+    and download the current schedule. Finished games stay cached."""
+    stats = RAW / season / "stats"
+    n = 0
+    for f in stats.glob("*.json.gz") if stats.exists() else []:
+        f.unlink()
+        n += 1
+    print(f"  refresh: dropped {n} cached season stats files", flush=True)
+    data = get(CDN_SCHEDULE, CDN_HEADERS)
+    if data is None:
+        print("  schedule: cdn.nba.com refused", file=sys.stderr)
+        return
+    js = json.loads(data)
+    if js.get("leagueSchedule", {}).get("seasonYear") != season:
+        print(f"  schedule is for {js.get('leagueSchedule', {}).get('seasonYear')}, not {season}; skipped")
+        return
+    (OUT / season).mkdir(parents=True, exist_ok=True)
+    (OUT / season / "schedule.json.gz").write_bytes(gzip.compress(data))
+    n_games = sum(len(d["games"]) for d in js["leagueSchedule"]["gameDates"])
+    print(f"  schedule: {n_games} games -> {OUT / season / 'schedule.json.gz'}", flush=True)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--seasons", nargs="+", default=["2022-23", "2023-24", "2024-25", "2025-26", "2026-27"])
@@ -298,10 +331,14 @@ def main() -> None:
     ap.add_argument("--stats-workers", type=int, default=2,
                     help="parallel per-game calls to stats.nba.com when the CDN refuses")
     ap.add_argument("--skip-stats", action="store_true", help="only play-by-play and box scores")
+    ap.add_argument("--refresh", action="store_true",
+                    help="season in progress: re-download the game log and season stats, and the schedule")
     args = ap.parse_args()
     for season in args.seasons:
         print(f"== {season}", flush=True)
-        if not args.skip_stats:
+        if args.refresh:
+            refresh(season)
+        if not args.skip_stats or args.refresh:
             fetch_season_stats(season)
         cdn_ids, stats_ids = fetch_games(season, args.workers, args.stats_workers)
         pack(season, cdn_ids, stats_ids)
