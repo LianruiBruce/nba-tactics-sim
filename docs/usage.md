@@ -162,3 +162,7 @@ per matchup side, engine vs model (slope of engine on model; 1 = engine keeps th
 ```
 
 斜率接近 1 表示引擎保留了模型预测的强弱差距。
+
+## 7. 赛前预测和对账 `weekly.py`
+
+每天或每周在自己电脑上运行一次 `python scripts/weekly.py`：刷新数据、给已完赛比赛记分、冻结接下来几天的预测并推送到 `forecasts` 分支。规则、对手和训练路线见 [forecasting.md](forecasting.md)。

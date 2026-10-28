@@ -19,12 +19,10 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from nbasim.data.names import find_player, player_name  # noqa: E402
+from nbasim.forecast import START_MIX  # noqa: E402
 from nbasim.realmodel import ZONES, RealModel  # noqa: E402
 
 ZONE_CN = {"rim": "篮下", "short_mid": "短中距", "long_mid": "长两分", "corner3": "底角三分", "above3": "弧顶三分"}
-# share of possessions by how they start (2025-26)
-START_MIX = {"def_rebound": 0.34, "made_fg": 0.39, "made_ft": 0.10, "turnover": 0.14, "period_start": 0.02,
-             "other": 0.01}
 
 
 def players(s: str) -> list[int]:
