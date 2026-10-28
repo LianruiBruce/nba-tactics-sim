@@ -33,7 +33,9 @@ def main():
     for n, rs in sorted(ref.items()):
         print(f"  n={n}: oracle {ci([r['oracle']['true_return'] for r in rs])}  "
               f"scripted best {ci([r['scripted_best'] for r in rs])}  "
-              f"oracle dup {np.mean([r['oracle']['duplicate_rate'] for r in rs]):.2f}")
+              f"oracle dup {np.mean([r['oracle']['duplicate_rate'] for r in rs]):.2f}  "
+              f"oracle cov {np.mean([r['oracle'].get('final_coverage', np.nan) for r in rs]):.3f}  "
+              f"scripted cov {np.mean([r.get('scripted_coverage', np.nan) for r in rs]):.3f}")
 
     print("\nReward-model diagnostics on three kinds of state (mean over seeds)")
     print(f"{'data':12} {'arch':10} {'n':>2} {'kind':11} {'abs_err':>8} {'optimism':>9} {'ens_std':>8} {'std/err':>8}")
@@ -48,14 +50,15 @@ def main():
 
     print("\nPolicies: true return, exploit gap (model minus true), duplicate rate; mean ± 95% CI over seeds")
     print(f"{'data':12} {'arch':10} {'n':>2} {'penalty':11} {'lam':>5} {'true_return':>14} {'exploit_gap':>14} "
-          f"{'dup_rate':>14} {'seeds':>5}")
+          f"{'dup_rate':>14} {'final_cov':>14} {'seeds':>5}")
     pg = defaultdict(list)
     for c in cells:
         for p in c["policies"]:
             pg[(c["data"], c["arch"], c["n"], p["penalty"], p["lam"])].append(p)
     for (data, arch, n, pen, lam), ps in sorted(pg.items()):
         print(f"{data:12} {arch:10} {n:2d} {pen:11} {lam:5g} {ci([p['true_return'] for p in ps])} "
-              f"{ci([p['exploit_gap'] for p in ps])} {ci([p['duplicate_rate'] for p in ps])} {len(ps):5d}")
+              f"{ci([p['exploit_gap'] for p in ps])} {ci([p['duplicate_rate'] for p in ps])} "
+              f"{ci([p.get('final_coverage', np.nan) for p in ps])} {len(ps):5d}")
 
 
 if __name__ == "__main__":

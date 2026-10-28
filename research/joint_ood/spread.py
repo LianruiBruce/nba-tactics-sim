@@ -87,6 +87,12 @@ class Spread:
         return torch.cat([p, v, rel_l, rel_a, ids], -1)
 
 
+def coverage(env, s):
+    """Mean distance from each landmark to its nearest agent."""
+    d = torch.linalg.norm(s[..., :2][:, :, None] - env.L[None, None], dim=-1)
+    return d.min(1).values.mean().item()
+
+
 def duplicate_rate(env, s):
     p = s[..., :2]
     nearest = torch.linalg.norm(p[:, :, None] - env.L[None, None], dim=-1).argmin(-1)  # b, n
@@ -96,9 +102,9 @@ def duplicate_rate(env, s):
 
 # ---------------------------------------------------------------- behaviour data
 
-def controller(s, targets, noise, gen):
+def controller(s, targets, noise, gen, kp=2.0, kd=1.0):
     p, v = s[..., :2], s[..., 2:]
-    a = 2.0 * (targets - p) - 1.0 * v
+    a = kp * (targets - p) - kd * v
     a = a + noise[:, None, None] * torch.randn(a.shape, generator=gen, device=DEV)
     return a.clamp(-1, 1)
 
@@ -305,9 +311,9 @@ def rollout(env, policy, s0, wm=None, member="random", gen=None):
     return st(rews), st(u_full), st(u_rew), st(states), st(actions)
 
 
-def train_policy(env, wm, penalty, lam, data, gen, iters, batch=256, lr=1e-3, member="random"):
+def train_policy(env, wm, penalty, lam, data, gen, iters, batch=256, lr=1e-3, member="random", hidden=128):
     obs_dim = env.obs(data["s"][:1, 0]).shape[-1]
-    pol = Policy(obs_dim).to(DEV)
+    pol = Policy(obs_dim, hidden).to(DEV)
     opt = torch.optim.Adam(pol.parameters(), lr=lr)
     s0_pool = data["s"][:, 0]
     knn = None
@@ -343,8 +349,9 @@ def train_policy(env, wm, penalty, lam, data, gen, iters, batch=256, lr=1e-3, me
 def evaluate(env, pol, wm, gen, episodes=2000):
     s0 = env.reset(episodes, gen)
     r_true, _, _, S, _ = rollout(env, pol, s0)
+    s_final = env.step(S[:, -1], pol(env.obs(S[:, -1])))
     out = {"true_return": r_true.sum(1).mean().item(),
-           "duplicate_rate": duplicate_rate(env, env.step(S[:, -1], pol(env.obs(S[:, -1]))))}
+           "duplicate_rate": duplicate_rate(env, s_final), "final_coverage": coverage(env, s_final)}
     if wm is not None:
         r_mod, uf, _, _, _ = rollout(env, pol, s0, wm, member="mean")
         out["model_return"] = r_mod.sum(1).mean().item()
@@ -375,8 +382,10 @@ def diagnostics(env, wm, gen):
 
 
 def scripted_best(env, gen, episodes=2000):
-    """Hungarian assignment from the start positions + the noiseless controller."""
-    s = env.reset(episodes, gen)
+    """Hungarian assignment from the start positions + the noiseless controller,
+    best over a grid of controller gains. Returns (return, final coverage, kp, kd)."""
+    s0 = env.reset(episodes, gen)
+    s = s0
     p = s[..., :2].cpu().numpy()
     L = env.L.cpu().numpy()
     tgt = np.zeros_like(p)
@@ -384,19 +393,34 @@ def scripted_best(env, gen, episodes=2000):
         r, c = linear_sum_assignment(np.linalg.norm(p[i][:, None] - L[None], axis=-1))
         tgt[i, r] = L[c]
     tgt = torch.as_tensor(tgt, device=DEV)
-    total = 0
-    for _ in range(T):
-        s = env.step(s, controller(s, tgt, torch.zeros(episodes, device=DEV), gen))
-        total = total + env.reward(s)
-    return total.mean().item()
+    best = None
+    for kp in (2.0, 4.0, 8.0, 16.0):
+        for kd in (0.5, 1.0, 2.0):
+            s, total = s0, 0
+            for _ in range(T):
+                s = env.step(s, controller(s, tgt, torch.zeros(episodes, device=DEV), gen, kp, kd))
+                total = total + env.reward(s)
+            cand = (total.mean().item(), coverage(env, s), kp, kd)
+            if best is None or cand[0] > best[0]:
+                best = cand
+    return best
 
 
 # ---------------------------------------------------------------- experiment
 
+def sample_landmarks(n, gen, min_dist=0.3):
+    # Landmarks closer than the 2*RAD collision distance cannot both be covered without a collision,
+    # which makes the layout degenerate; resample the whole layout until all pairs are min_dist apart.
+    while True:
+        L = torch.rand(n, 2, generator=gen, device=DEV) * 1.6 - 0.8
+        if n < 2 or torch.pdist(L).min().item() >= min_dist:
+            return L
+
+
 def run_cell(args, n, seed, data_kind, arch, configs):
     gen = torch.Generator(device=DEV).manual_seed(seed * 1000 + n)
     torch.manual_seed(seed * 1000 + n)
-    landmarks = torch.rand(n, 2, generator=gen, device=DEV) * 1.6 - 0.8
+    landmarks = sample_landmarks(n, gen)
     env = Spread(n, landmarks)
     data = collect(env, data_kind, args.episodes, gen)
     t = time.time()
@@ -408,7 +432,8 @@ def run_cell(args, n, seed, data_kind, arch, configs):
            "diag": diagnostics(env, wm, gen), "policies": []}
     for penalty, lam in configs:
         t = time.time()
-        pol = train_policy(env, wm, penalty, lam, data, gen, args.iters, lr=args.lr, member=args.member)
+        pol = train_policy(env, wm, penalty, lam, data, gen, args.iters, batch=args.batch, lr=args.lr,
+                           member=args.member, hidden=args.pol_hidden)
         ev = evaluate(env, pol, wm, gen)
         ev.update({"penalty": penalty, "lam": lam, "time": time.time() - t})
         res["policies"].append(ev)
@@ -418,11 +443,14 @@ def run_cell(args, n, seed, data_kind, arch, configs):
 def run_reference(args, n, seed):
     gen = torch.Generator(device=DEV).manual_seed(seed * 1000 + n)
     torch.manual_seed(seed * 1000 + n)
-    landmarks = torch.rand(n, 2, generator=gen, device=DEV) * 1.6 - 0.8
+    landmarks = sample_landmarks(n, gen)
     env = Spread(n, landmarks)
     data = collect(env, "assignment", min(args.episodes, 2000), gen)
-    pol = train_policy(env, None, "none", 0.0, data, gen, args.iters, lr=args.lr)
-    return {"n": n, "seed": seed, "oracle": evaluate(env, pol, None, gen), "scripted_best": scripted_best(env, gen)}
+    pol = train_policy(env, None, "none", 0.0, data, gen, args.iters, batch=args.batch, lr=args.lr,
+                       hidden=args.pol_hidden)
+    ret, cov, kp, kd = scripted_best(env, gen)
+    return {"n": n, "seed": seed, "oracle": evaluate(env, pol, None, gen), "scripted_best": ret,
+            "scripted_coverage": cov, "scripted_gains": [kp, kd]}
 
 
 def main():
@@ -438,6 +466,8 @@ def main():
     ap.add_argument("--iters", type=int, default=600)
     ap.add_argument("--member", default="random", choices=["random", "mean"])
     ap.add_argument("--lr", type=float, default=1e-3)
+    ap.add_argument("--batch", type=int, default=256, help="policy-training batch of start states")
+    ap.add_argument("--pol_hidden", type=int, default=128)
     ap.add_argument("--no_reference", action="store_true")
     ap.add_argument("--reference_only", action="store_true",
                     help="only train the true-dynamics oracle, to check the policy optimiser reaches the scripted best")

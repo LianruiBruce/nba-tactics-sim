@@ -1,0 +1,75 @@
+{
+ "args": {
+  "ns": "2,4,8",
+  "seeds": 2,
+  "archs": "joint,additive,attention",
+  "data": "assignment,independent",
+  "configs": "none:0,ens:1,ens:5,ens_reward:5,agent_knn:1,joint_knn:1",
+  "episodes": 4000,
+  "ensemble": 5,
+  "wm_steps": 6000,
+  "iters": 2000,
+  "member": "random",
+  "lr": 0.001,
+  "no_reference": false,
+  "reference_only": true,
+  "out": "research/joint_ood/spread_ref2000.json"
+ },
+ "cells": [],
+ "reference": [
+  {
+   "n": 2,
+   "seed": 0,
+   "oracle": {
+    "true_return": -2.3492276668548584,
+    "duplicate_rate": 0.0
+   },
+   "scripted_best": -4.808100700378418
+  },
+  {
+   "n": 2,
+   "seed": 1,
+   "oracle": {
+    "true_return": -2.400636911392212,
+    "duplicate_rate": 0.0
+   },
+   "scripted_best": -4.620882034301758
+  },
+  {
+   "n": 4,
+   "seed": 0,
+   "oracle": {
+    "true_return": -3.1672441959381104,
+    "duplicate_rate": 0.06750000268220901
+   },
+   "scripted_best": -4.933265209197998
+  },
+  {
+   "n": 4,
+   "seed": 1,
+   "oracle": {
+    "true_return": -2.5145556926727295,
+    "duplicate_rate": 0.0
+   },
+   "scripted_best": -3.911430835723877
+  },
+  {
+   "n": 8,
+   "seed": 0,
+   "oracle": {
+    "true_return": -2.640955686569214,
+    "duplicate_rate": 1.0
+   },
+   "scripted_best": -7.461669445037842
+  },
+  {
+   "n": 8,
+   "seed": 1,
+   "oracle": {
+    "true_return": -2.6028332710266113,
+    "duplicate_rate": 0.0
+   },
+   "scripted_best": -3.520115852355957
+  }
+ ]
+}

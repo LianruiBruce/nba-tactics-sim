@@ -151,10 +151,13 @@ class Ensemble:
         return apply_mlp(h.mean(-2), self.p["head"])[..., 0]
 
 
-def train_ensemble(model, X, y, rng, steps=3000, batch=512, lr=1e-3):
+def train_ensemble(model, X, y, rng, steps=3000, batch=512, lr=1e-3, bootstrap=True):
     opt = torch.optim.Adam(model.parameters(), lr=lr)
     n = X.shape[0]
-    boot = torch.as_tensor(np.stack([rng.integers(0, n, n) for _ in range(model.k)]), device=DEV)
+    if bootstrap:
+        boot = torch.as_tensor(np.stack([rng.integers(0, n, n) for _ in range(model.k)]), device=DEV)
+    else:  # members differ only by init and minibatch order
+        boot = torch.arange(n, device=DEV).expand(model.k, n).contiguous()
     for _ in range(steps):
         pos = torch.randint(0, n, (model.k, batch), device=DEV)
         idx = torch.gather(boot, 1, pos)
@@ -166,7 +169,8 @@ def train_ensemble(model, X, y, rng, steps=3000, batch=512, lr=1e-3):
 
 # ---------------------------------------------------------------- planner
 
-def plan(model, norm, data_flat, L, n, lam, mu_agent, mu_joint, rng, restarts=256, steps=300, lr=0.02):
+def plan(model, norm, data_flat, L, n, lam, mu_agent, mu_joint, rng, restarts=256, steps=300, lr=0.02,
+         init="both"):
     mean_x, std_x, mean_y, std_y = norm
 
     def objective(a_flat):
@@ -185,10 +189,10 @@ def plan(model, norm, data_flat, L, n, lam, mu_agent, mu_joint, rng, restarts=25
     # from another), which is where independently trained decentralised
     # policies end up when each settles on its own preferred mode.
     data_np = data_flat.cpu().numpy()
-    half = restarts // 2
+    half = {"both": restarts // 2, "logged": restarts, "mixed": 0}[init]
     logged = data_np[rng.integers(0, data_np.shape[0], half)]
     rows = rng.integers(0, data_np.shape[0], (restarts - half, n))
-    mixed = data_np.reshape(-1, n, 2)[rows, np.arange(n)[None]].reshape(restarts - half, -1)
+    mixed = data_np.reshape(-1, n, 2)[rows, np.arange(n)[None]].reshape(restarts - half, 2 * n)
     a = torch.as_tensor(np.concatenate([logged, mixed]), dtype=torch.float32, device=DEV).requires_grad_()
     opt = torch.optim.Adam([a], lr=lr)
     for _ in range(steps):
@@ -220,7 +224,10 @@ def auroc(neg, pos):
     return (rp - len(pos) * (len(pos) + 1) / 2) / (len(pos) * len(neg))
 
 
-def run(n, seed, data_size, lams, settings, arch):
+def run(n, seed, data_size, lams, settings, arch, cfg=None):
+    cfg = cfg or {}
+    global NOISE
+    NOISE = cfg.get("noise", 0.1)
     rng = np.random.default_rng(seed)
     torch.manual_seed(seed)
     L = landmarks(n)
@@ -233,8 +240,9 @@ def run(n, seed, data_size, lams, settings, arch):
     mean_x, std_x = X.mean(0), X.std(0) + 1e-6
     mean_y, std_y = float(R.mean()), float(R.std() + 1e-6)
     tens = lambda v: torch.as_tensor(v, dtype=torch.float32, device=DEV)
-    model = Ensemble(arch, n)
-    train_ensemble(model, tens((X - mean_x) / std_x), tens((R - mean_y) / std_y), rng)
+    model = Ensemble(arch, n, k_models=cfg.get("k", 5), hidden=cfg.get("hidden", 256))
+    train_ensemble(model, tens((X - mean_x) / std_x), tens((R - mean_y) / std_y), rng,
+                   steps=cfg.get("steps", 3000), bootstrap=cfg.get("bootstrap", True))
     norm = (tens(mean_x), tens(std_x), mean_y, std_y)
 
     # diagnostics on three kinds of joint action
@@ -264,12 +272,13 @@ def run(n, seed, data_size, lams, settings, arch):
     data_flat = tens(X)
     for setting in settings:
         for lam in lams:
-            a, m, sd = plan(model, norm, data_flat, Lt, n, lam, setting["mu_agent"], setting["mu_joint"], rng)
+            a, m, sd = plan(model, norm, data_flat, Lt, n, lam, setting["mu_agent"], setting["mu_joint"], rng,
+                            restarts=cfg.get("restarts", 256), init=cfg.get("init", "both"))
             r = float(true_reward_np(a[None], L, s)[0])
             plans.append({"setting": setting["name"], "lam": lam, "model_r": m, "model_std": sd, "true_r": r,
                           "exploit_gap": m - r, "regret": r_star - r,
                           "duplicate": bool(not is_permutation(a[None], L)[0])})
-    return {"arch": arch, "n": n, "seed": seed, "r_star": r_star, "r_data_best": float(R.max()),
+    return {"arch": arch, "n": n, "seed": seed, "cfg": cfg, "r_star": r_star, "r_data_best": float(R.max()),
             "r_behavior": float(R.mean()),
             "frac_joint_space_in_support": float(math.factorial(n) / n ** n),
             "diag": diag, "plans": plans}
@@ -282,18 +291,31 @@ def main():
     ap.add_argument("--data", type=int, default=20000)
     ap.add_argument("--archs", default="joint,attention,additive")
     ap.add_argument("--out", default="pilot_assignment.json")
+    ap.add_argument("--seed-start", type=int, default=0)
+    ap.add_argument("--lams", default="0,1,3,10")
+    # ablation knobs; defaults reproduce the main run
+    ap.add_argument("--tag", default="base")
+    ap.add_argument("--k", type=int, default=5, help="ensemble size")
+    ap.add_argument("--hidden", type=int, default=256)
+    ap.add_argument("--steps", type=int, default=3000, help="training steps")
+    ap.add_argument("--noise", type=float, default=0.1, help="action noise around landmarks")
+    ap.add_argument("--no-bootstrap", action="store_true")
+    ap.add_argument("--restarts", type=int, default=256, help="planner restarts")
+    ap.add_argument("--init", default="both", choices=["both", "logged", "mixed"], help="planner restart init")
     args = ap.parse_args()
     print(f"device: {DEV}", flush=True)
-    lams = [0.0, 1.0, 3.0, 10.0]
+    lams = [float(x) for x in args.lams.split(",")]
+    cfg = {"tag": args.tag, "k": args.k, "hidden": args.hidden, "steps": args.steps, "noise": args.noise,
+           "bootstrap": not args.no_bootstrap, "restarts": args.restarts, "init": args.init, "data": args.data}
     settings = [{"name": "ensemble_penalty", "mu_agent": 0.0, "mu_joint": 0.0},
                 {"name": "plus_per_agent_support", "mu_agent": 10.0, "mu_joint": 0.0},
                 {"name": "plus_joint_support_oracle", "mu_agent": 0.0, "mu_joint": 10.0}]
     results = []
     for arch in args.archs.split(","):
         for n in [int(x) for x in args.ns.split(",")]:
-            for seed in range(args.seeds):
+            for seed in range(args.seed_start, args.seed_start + args.seeds):
                 t = time.time()
-                results.append(run(n, seed, args.data, lams, settings, arch))
+                results.append(run(n, seed, args.data, lams, settings, arch, cfg))
                 print(f"arch={arch} n={n} seed={seed} {time.time() - t:.0f}s", flush=True)
                 with open(args.out, "w") as f:
                     json.dump(results, f, indent=1)
