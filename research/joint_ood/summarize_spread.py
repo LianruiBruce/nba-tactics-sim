@@ -29,10 +29,12 @@ def main():
     ref = defaultdict(list)
     for r in refs:
         ref[r["n"]].append(r)
-    print("Reference returns (true env)")
+    print("Reference returns (true env). Oracle = same policy class and optimiser trained through the true\n"
+          "dynamics (the main reference). Scripted best = Hungarian assignment + tuned PD controller, a loose\n"
+          "upper bound the policy class does not reach.")
     for n, rs in sorted(ref.items()):
         print(f"  n={n}: oracle {ci([r['oracle']['true_return'] for r in rs])}  "
-              f"scripted best {ci([r['scripted_best'] for r in rs])}  "
+              f"scripted best (loose UB) {ci([r['scripted_best'] for r in rs])}  "
               f"oracle dup {np.mean([r['oracle']['duplicate_rate'] for r in rs]):.2f}  "
               f"oracle cov {np.mean([r['oracle'].get('final_coverage', np.nan) for r in rs]):.3f}  "
               f"scripted cov {np.mean([r.get('scripted_coverage', np.nan) for r in rs]):.3f}")
@@ -48,16 +50,19 @@ def main():
             print(f"{data:12} {arch:10} {n:2d} {kind:11} {m('abs_err'):8.3f} {m('optimism'):9.3f} "
                   f"{m('ens_std'):8.3f} {m('std_over_err'):8.3f}")
 
-    print("\nPolicies: true return, exploit gap (model minus true), duplicate rate; mean ± 95% CI over seeds")
-    print(f"{'data':12} {'arch':10} {'n':>2} {'penalty':11} {'lam':>5} {'true_return':>14} {'exploit_gap':>14} "
-          f"{'dup_rate':>14} {'final_cov':>14} {'seeds':>5}")
+    oracle = {(r["n"], r["seed"]): r["oracle"]["true_return"] for r in refs}
+    print("\nPolicies: true return, regret vs oracle (oracle minus policy true return, paired by n and seed),\n"
+          "exploit gap (model minus true), duplicate rate, final coverage; mean ± 95% CI over seeds")
+    print(f"{'data':12} {'arch':10} {'n':>2} {'penalty':11} {'lam':>5} {'true_return':>14} {'regret_oracle':>14} "
+          f"{'exploit_gap':>14} {'dup_rate':>14} {'final_cov':>14} {'seeds':>5}")
     pg = defaultdict(list)
     for c in cells:
         for p in c["policies"]:
-            pg[(c["data"], c["arch"], c["n"], p["penalty"], p["lam"])].append(p)
+            pg[(c["data"], c["arch"], c["n"], p["penalty"], p["lam"])].append(
+                dict(p, regret_oracle=oracle.get((c["n"], c["seed"]), np.nan) - p["true_return"]))
     for (data, arch, n, pen, lam), ps in sorted(pg.items()):
         print(f"{data:12} {arch:10} {n:2d} {pen:11} {lam:5g} {ci([p['true_return'] for p in ps])} "
-              f"{ci([p['exploit_gap'] for p in ps])} {ci([p['duplicate_rate'] for p in ps])} "
+              f"{ci([p['regret_oracle'] for p in ps])} {ci([p['exploit_gap'] for p in ps])} {ci([p['duplicate_rate'] for p in ps])} "
               f"{ci([p.get('final_coverage', np.nan) for p in ps])} {len(ps):5d}")
 
 

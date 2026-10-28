@@ -49,9 +49,10 @@ COL_W = 0.5
 # ---------------------------------------------------------------- environment
 
 class Spread:
-    def __init__(self, n, landmarks):
+    def __init__(self, n, landmarks, agent_id=True):
         self.n = n
         self.L = landmarks  # (n, 2) tensor, fixed for the dataset
+        self.agent_id = agent_id  # policy observation only; world models always see the id
 
     def reset(self, b, gen):
         p = (torch.rand(b, self.n, 2, generator=gen, device=DEV) * 2 - 1)
@@ -83,6 +84,8 @@ class Spread:
         rel_a = p[:, None] - p[:, :, None]  # b, i, k, 2
         mask = ~torch.eye(n, dtype=torch.bool, device=DEV)
         rel_a = rel_a[:, mask].reshape(b, n, -1)
+        if not self.agent_id:
+            return torch.cat([p, v, rel_l, rel_a], -1)
         ids = torch.eye(n, device=DEV).expand(b, n, n)
         return torch.cat([p, v, rel_l, rel_a, ids], -1)
 
@@ -421,12 +424,13 @@ def run_cell(args, n, seed, data_kind, arch, configs):
     gen = torch.Generator(device=DEV).manual_seed(seed * 1000 + n)
     torch.manual_seed(seed * 1000 + n)
     landmarks = sample_landmarks(n, gen)
-    env = Spread(n, landmarks)
+    env = Spread(n, landmarks, agent_id=not args.no_agent_id)
     data = collect(env, data_kind, args.episodes, gen)
     t = time.time()
     wm = WorldModel(arch, n, k=args.ensemble)
     train_world_model(wm, data, gen, args.wm_steps)
     res = {"n": n, "seed": seed, "data": data_kind, "arch": arch, "ensemble": args.ensemble,
+           "agent_id": not args.no_agent_id,
            "episodes": args.episodes, "wm_time": time.time() - t,
            "behaviour_return": data["r"].sum(1).mean().item(),
            "diag": diagnostics(env, wm, gen), "policies": []}
@@ -444,12 +448,13 @@ def run_reference(args, n, seed):
     gen = torch.Generator(device=DEV).manual_seed(seed * 1000 + n)
     torch.manual_seed(seed * 1000 + n)
     landmarks = sample_landmarks(n, gen)
-    env = Spread(n, landmarks)
+    env = Spread(n, landmarks, agent_id=not args.no_agent_id)
     data = collect(env, "assignment", min(args.episodes, 2000), gen)
     pol = train_policy(env, None, "none", 0.0, data, gen, args.iters, batch=args.batch, lr=args.lr,
                        hidden=args.pol_hidden)
     ret, cov, kp, kd = scripted_best(env, gen)
-    return {"n": n, "seed": seed, "oracle": evaluate(env, pol, None, gen), "scripted_best": ret,
+    return {"n": n, "seed": seed, "agent_id": not args.no_agent_id,
+            "oracle": evaluate(env, pol, None, gen), "scripted_best": ret,
             "scripted_coverage": cov, "scripted_gains": [kp, kd]}
 
 
@@ -463,11 +468,13 @@ def main():
     ap.add_argument("--episodes", type=int, default=4000)
     ap.add_argument("--ensemble", type=int, default=5)
     ap.add_argument("--wm_steps", type=int, default=6000)
-    ap.add_argument("--iters", type=int, default=600)
+    ap.add_argument("--iters", type=int, default=2000)
     ap.add_argument("--member", default="random", choices=["random", "mean"])
     ap.add_argument("--lr", type=float, default=1e-3)
     ap.add_argument("--batch", type=int, default=256, help="policy-training batch of start states")
     ap.add_argument("--pol_hidden", type=int, default=128)
+    ap.add_argument("--seed_start", type=int, default=0)
+    ap.add_argument("--no_agent_id", action="store_true", help="drop the agent id from the policy observation")
     ap.add_argument("--no_reference", action="store_true")
     ap.add_argument("--reference_only", action="store_true",
                     help="only train the true-dynamics oracle, to check the policy optimiser reaches the scripted best")
@@ -478,7 +485,7 @@ def main():
     out = {"args": vars(args), "cells": [], "reference": []}
     save = lambda: json.dump(out, open(args.out, "w"), indent=1)
     for n in [int(x) for x in args.ns.split(",")]:
-        for seed in range(args.seeds):
+        for seed in range(args.seed_start, args.seed_start + args.seeds):
             if not args.no_reference:
                 t = time.time()
                 out["reference"].append(run_reference(args, n, seed))
