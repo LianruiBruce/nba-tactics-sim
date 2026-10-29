@@ -441,6 +441,7 @@ def run_cell(args, n, seed, data_kind, arch, configs):
         ev = evaluate(env, pol, wm, gen)
         ev.update({"penalty": penalty, "lam": lam, "time": time.time() - t})
         res["policies"].append(ev)
+        print(f"  policy {penalty}:{lam:g} {ev['time']:.0f}s", flush=True)
     return res
 
 
@@ -489,16 +490,16 @@ def main():
             if not args.no_reference:
                 t = time.time()
                 out["reference"].append(run_reference(args, n, seed))
-                print(f"reference n={n} seed={seed} {time.time() - t:.0f}s", flush=True)
                 save()
+                print(f"reference n={n} seed={seed} {time.time() - t:.0f}s", flush=True)
             if args.reference_only:
                 continue
             for data_kind in args.data.split(","):
                 for arch in args.archs.split(","):
                     t = time.time()
                     out["cells"].append(run_cell(args, n, seed, data_kind, arch, configs))
+                    save()  # before printing, so a lost stdout cannot lose the cell
                     print(f"n={n} seed={seed} data={data_kind} arch={arch} {time.time() - t:.0f}s", flush=True)
-                    save()
 
 
 if __name__ == "__main__":

@@ -1,0 +1,11 @@
+Reference returns (true env). Oracle = same policy class and optimiser trained through the true
+dynamics (the main reference). Scripted best = Hungarian assignment + tuned PD controller, a loose
+upper bound the policy class does not reach.
+  n=8: oracle  -2.620±0.355  scripted best (loose UB)  -1.296±1.384  oracle dup 0.00  oracle cov 0.004  scripted cov 0.000
+
+Reward-model diagnostics on three kinds of state (mean over seeds)
+data         arch        n kind         abs_err  optimism  ens_std  std/err
+
+Policies: true return, regret vs oracle (oracle minus policy true return, paired by n and seed),
+exploit gap (model minus true), duplicate rate, final coverage; mean ± 95% CI over seeds
+data         arch        n penalty       lam    true_return  regret_oracle    exploit_gap       dup_rate      final_cov seeds

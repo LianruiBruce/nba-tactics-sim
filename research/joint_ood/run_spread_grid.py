@@ -36,8 +36,10 @@ def job(spec, out, extra):
     if complete(path, ref):
         return name, 0.0, "skip"
     t = time.time()
-    p = subprocess.run([sys.executable, SCRIPT, *args, *extra, "--out", path], capture_output=True, text=True)
-    return name, time.time() - t, "ok" if p.returncode == 0 else "FAIL\n" + p.stderr[-2000:]
+    log = os.path.join(out, name + ".log")
+    with open(log, "w") as f:
+        p = subprocess.run([sys.executable, SCRIPT, *args, *extra, "--out", path], stdout=f, stderr=subprocess.STDOUT)
+    return name, time.time() - t, "ok" if p.returncode == 0 else f"FAIL (see {log})"
 
 
 def main():
@@ -50,6 +52,7 @@ def main():
     ap.add_argument("--configs", default="none:0,ens:1,ens:5,agent_knn:1,joint_knn:1")
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--out", default=os.path.join(HERE, "spread_grid"))
+    ap.add_argument("--exclude", default="", help="comma-separated job names to skip (e.g. already running)")
     ap.add_argument("extra", nargs="*", help="passed through to spread.py, after --")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
@@ -63,6 +66,7 @@ def main():
                     specs.append((f"cell_n{n}_s{seed}_{data}_{arch}",
                                   base + ["--no_reference", "--data", data, "--archs", arch,
                                           "--configs", args.configs], False))
+    specs = [s for s in specs if s[0] not in args.exclude.split(",")]
     # longest jobs (large n) first so the tail is short
     specs.sort(key=lambda s: -int(s[0].split("_n")[1].split("_")[0]))
     t0 = time.time()
