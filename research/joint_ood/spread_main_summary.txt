@@ -3,7 +3,7 @@ dynamics (the main reference). Scripted best = Hungarian assignment + tuned PD c
 upper bound the policy class does not reach.
   n=2: oracle  -2.726±1.008  scripted best (loose UB)  -2.531±0.937  oracle dup 0.00  oracle cov 0.002  scripted cov 0.000
   n=4: oracle  -2.454±0.255  scripted best (loose UB)  -1.698±0.229  oracle dup 0.00  oracle cov 0.002  scripted cov 0.000
-  n=8: oracle  -3.015±1.701  scripted best (loose UB)  -1.264±0.303  oracle dup 0.29  oracle cov 0.021  scripted cov 0.000
+  n=8: oracle  -2.983±0.895  scripted best (loose UB)  -1.241±0.174  oracle dup 0.22  oracle cov 0.017  scripted cov 0.000
 
 Reward-model diagnostics on three kinds of state (mean over seeds)
 data         arch        n kind         abs_err  optimism  ens_std  std/err
@@ -31,9 +31,9 @@ assignment   joint       2 uniform        0.030     0.005    0.035    1.180
 assignment   joint       4 assignment     0.018    -0.004    0.022    1.258
 assignment   joint       4 duplicate      0.164     0.118    0.047    0.289
 assignment   joint       4 uniform        0.106     0.065    0.097    0.910
-assignment   joint       8 assignment     0.043    -0.018    0.062    1.454
-assignment   joint       8 duplicate      0.201     0.183    0.067    0.335
-assignment   joint       8 uniform        0.160     0.094    0.156    0.975
+assignment   joint       8 assignment     0.040    -0.016    0.059    1.489
+assignment   joint       8 duplicate      0.203     0.187    0.064    0.315
+assignment   joint       8 uniform        0.160     0.100    0.150    0.943
 independent  additive    2 assignment     0.271    -0.270    0.020    0.078
 independent  additive    2 duplicate      0.296     0.294    0.022    0.075
 independent  additive    2 uniform        0.142     0.072    0.057    0.397
@@ -58,9 +58,9 @@ independent  joint       2 uniform        0.026     0.005    0.032    1.201
 independent  joint       4 assignment     0.059    -0.043    0.083    1.399
 independent  joint       4 duplicate      0.124     0.001    0.102    0.826
 independent  joint       4 uniform        0.122     0.077    0.150    1.227
-independent  joint       8 assignment     0.516    -0.515    0.261    0.506
-independent  joint       8 duplicate      0.382    -0.367    0.270    0.707
-independent  joint       8 uniform        0.190    -0.079    0.272    1.429
+independent  joint       8 assignment     0.520    -0.519    0.261    0.503
+independent  joint       8 duplicate      0.383    -0.369    0.271    0.707
+independent  joint       8 uniform        0.188    -0.077    0.269    1.430
 
 Policies: true return, regret vs oracle (oracle minus policy true return, paired by n and seed),
 exploit gap (model minus true), duplicate rate (any shared landmark; saturates at large n),
@@ -106,11 +106,11 @@ assignment   joint       4 ens             1  -5.140±1.163   2.686±0.908   1.1
 assignment   joint       4 ens             5  -5.879±1.403   3.425±1.215   1.463±1.532   0.117±0.174   0.091±0.056   0.181±0.303     3
 assignment   joint       4 joint_knn       1  -4.717±1.071   2.264±0.818   1.107±1.341   0.042±0.099   0.064±0.033   0.052±0.098     3
 assignment   joint       4 none            0 -26.375±4.905  23.922±4.659  25.724±6.071   0.817±0.787   1.734±0.457   1.000±0.000     3
-assignment   joint       8 agent_knn       1 -12.502±2.508   9.487±0.820  11.126±3.136   1.000±0.002   0.310±0.290   0.557             3
-assignment   joint       8 ens             1 -10.148±0.325   7.133±1.489   7.466±1.153   0.986±0.002   0.278±0.092   0.831             3
-assignment   joint       8 ens             5 -11.137±0.380   8.122±1.808   6.900±0.135   0.998±0.002   0.283±0.095   0.839             3
-assignment   joint       8 joint_knn       1  -9.438±1.238   6.422±0.547   7.695±2.314   0.987±0.021   0.261±0.127   0.808             3
-assignment   joint       8 none            0 -31.610±34.505  28.595±34.170  42.939±40.333   1.000±0.000   2.446±3.782   1.000             3
+assignment   joint       8 agent_knn       1 -12.672±1.419   9.689±0.774  11.233±1.675   0.999±0.003   0.294±0.160   0.515±0.537     4
+assignment   joint       8 ens             1 -10.234±0.323   7.251±0.865   7.656±0.854   0.986±0.001   0.287±0.056   0.838±0.080     4
+assignment   joint       8 ens             5 -11.226±0.346   8.243±1.021   7.021±0.393   0.997±0.002   0.294±0.061   0.846±0.092     4
+assignment   joint       8 joint_knn       1  -9.576±0.783   6.593±0.613   7.906±1.385   0.988±0.011   0.272±0.076   0.812±0.052     4
+assignment   joint       8 none            0 -32.844±18.469  29.861±18.319  44.572±21.726   1.000±0.000   2.594±2.034   1.000±0.001     4
 independent  additive    2 agent_knn       1 -13.067±4.092  10.340±3.092   5.723±5.373   0.763±1.018   0.464±0.403   0.998±0.005     3
 independent  additive    2 ens             1 -13.034±20.532  10.308±19.549   5.319±13.982   0.534±0.441   0.443±0.914   0.817±0.665     3
 independent  additive    2 ens             5 -12.285±18.863   9.559±17.909   2.923±9.505   0.667±1.434   0.419±0.971   0.508±0.033     3
@@ -151,8 +151,8 @@ independent  joint       4 ens             1  -6.565±4.583   4.111±4.366   4.2
 independent  joint       4 ens             5  -6.383±1.181   3.929±0.986   1.162±1.148   0.000±0.000   0.130±0.084   0.251±0.617     3
 independent  joint       4 joint_knn       1  -9.085±6.409   6.632±6.664  11.458±19.122   0.667±1.434   0.328±0.287   0.917±0.359     3
 independent  joint       4 none            0 -25.077±31.715  22.623±31.970  30.337±36.914   1.000±0.000   1.819±3.907   1.000±0.000     3
-independent  joint       8 agent_knn       1 -10.282±7.344   7.266±5.662  18.578±5.799   1.000±0.000   0.321±0.065   0.887±1.330     3
-independent  joint       8 ens             1 -14.109±10.749  11.094±9.560  16.082±10.525   1.000±0.000   0.322±0.040   0.907±1.048     3
-independent  joint       8 ens             5 -18.877±7.116  15.862±7.946  14.685±9.301   1.000±0.000   0.322±0.152   0.733±1.740     3
-independent  joint       8 joint_knn       1 -11.279±1.938   8.264±2.564  15.447±3.582   1.000±0.000   0.288±0.104   0.768±0.194     3
-independent  joint       8 none            0 -37.975±10.782  34.960±12.468  67.085±15.271   1.000±0.000   3.526±1.365   1.000±0.000     3
+independent  joint       8 agent_knn       1  -9.991±3.951   7.008±3.074  18.702±3.058   1.000±0.000   0.320±0.034   0.861±0.283     4
+independent  joint       8 ens             1 -17.097±11.047  14.114±10.834  19.464±12.089   1.000±0.000   0.343±0.069   0.881±0.232     4
+independent  joint       8 ens             5 -18.860±3.722  15.877±4.156  15.365±5.325   1.000±0.000   0.329±0.083   0.714±0.350     4
+independent  joint       8 joint_knn       1 -11.547±1.323   8.563±1.645  15.072±2.222   1.000±0.001   0.294±0.057   0.790±0.103     4
+independent  joint       8 none            0 -38.514±5.894  35.530±6.769  66.833±8.027   1.000±0.000   3.591±0.743   1.000±0.000     4
