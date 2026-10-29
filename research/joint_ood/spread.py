@@ -293,12 +293,12 @@ class KNN:
         return ((z - self.ref[idx]) ** 2).sum(-1) / z.shape[-1]
 
 
-def rollout(env, policy, s0, wm=None, member="random", gen=None):
-    """Imagined (wm given) or true (wm None) episode. Returns per-step rewards,
-    uncertainties and the visited (state, action) pairs."""
+def rollout(env, policy, s0, wm=None, member="random", gen=None, steps=T):
+    """Imagined (wm given) or true (wm None) episode of `steps` steps. Returns per-step
+    rewards, uncertainties and the visited (state, action) pairs."""
     s = s0
     rews, u_full, u_rew, states, actions = [], [], [], [], []
-    for _ in range(T):
+    for _ in range(steps):
         a = policy(env.obs(s))
         states.append(s), actions.append(a)
         if wm is None:
@@ -322,7 +322,16 @@ def rollout(env, policy, s0, wm=None, member="random", gen=None):
     return st(rews), st(u_full), st(u_rew), st(states), st(actions)
 
 
-def train_policy(env, wm, penalty, lam, data, gen, iters, batch=256, lr=1e-3, member="random", hidden=128):
+def pair_features(s, a, n):
+    """(state, action) of every agent pair i<j, both agents in absolute coordinates
+    (the landmarks are fixed within a cell). s: (B, n, 4), a: (B, n, 2) -> (B, P, 12)."""
+    i, j = torch.triu_indices(n, n, 1, device=DEV)
+    x = torch.cat([s, a], -1)
+    return torch.cat([x[:, i], x[:, j]], -1)
+
+
+def train_policy(env, wm, penalty, lam, data, gen, iters, batch=256, lr=1e-3, member="random", hidden=128,
+                 horizon=T):
     obs_dim = env.obs(data["s"][:1, 0]).shape[-1]
     pol = Policy(obs_dim, hidden).to(DEV)
     opt = torch.optim.Adam(pol.parameters(), lr=lr)
@@ -333,9 +342,17 @@ def train_policy(env, wm, penalty, lam, data, gen, iters, batch=256, lr=1e-3, me
         knn = KNN(torch.cat([o, data["a"].reshape(-1, env.n, 2)], -1).reshape(-1, obs_dim + 2), gen=gen)
     elif penalty == "joint_knn":
         knn = KNN(torch.cat([data["s"].reshape(-1, env.n * 4), data["a"].reshape(-1, env.n * 2)], -1), gen=gen)
+    elif penalty == "pair_knn":  # support of every agent pair, both orders in the reference
+        p = pair_features(data["s"].reshape(-1, env.n, 4), data["a"].reshape(-1, env.n, 2), env.n).reshape(-1, 12)
+        knn = KNN(torch.cat([p, torch.cat([p[:, 6:], p[:, :6]], -1)]), gen=gen)
+    all_states = data["s"].reshape(-1, env.n, 4)
     for _ in range(iters):
-        s0 = s0_pool[torch.randint(0, s0_pool.shape[0], (batch,), generator=gen, device=DEV)]
-        r, uf, ur, S, A = rollout(env, pol, s0, wm, member, gen)
+        if horizon >= T:  # whole episodes from the start states
+            s0 = s0_pool[torch.randint(0, s0_pool.shape[0], (batch,), generator=gen, device=DEV)]
+        else:  # short branched rollouts from any logged state
+            s0 = all_states[torch.randint(0, all_states.shape[0], (batch,), generator=gen, device=DEV)]
+        r, uf, ur, S, A = rollout(env, pol, s0, wm, member, gen, steps=min(horizon, T))
+        H = S.shape[1]
         obj = r.sum(1)
         if wm is not None and lam > 0:
             if penalty == "ens":
@@ -344,10 +361,13 @@ def train_policy(env, wm, penalty, lam, data, gen, iters, batch=256, lr=1e-3, me
                 obj = obj - lam * ur.sum(1)
             elif penalty == "agent_knn":
                 x = torch.cat([env.obs(S.reshape(-1, env.n, 4)), A.reshape(-1, env.n, 2)], -1)
-                obj = obj - lam * knn(x.reshape(-1, obs_dim + 2)).reshape(batch, T, env.n).sum((1, 2)) / env.n
+                obj = obj - lam * knn(x.reshape(-1, obs_dim + 2)).reshape(batch, H, env.n).sum((1, 2)) / env.n
             elif penalty == "joint_knn":
-                x = torch.cat([S.reshape(batch * T, -1), A.reshape(batch * T, -1)], -1)
-                obj = obj - lam * knn(x).reshape(batch, T).sum(1)
+                x = torch.cat([S.reshape(batch * H, -1), A.reshape(batch * H, -1)], -1)
+                obj = obj - lam * knn(x).reshape(batch, H).sum(1)
+            elif penalty == "pair_knn":
+                x = pair_features(S.reshape(-1, env.n, 4), A.reshape(-1, env.n, 2), env.n)
+                obj = obj - lam * knn(x.reshape(-1, 12)).reshape(batch, H, -1).mean(-1).sum(1)
         loss = -obj.mean()
         opt.zero_grad()
         loss.backward()
@@ -446,7 +466,7 @@ def run_cell(args, n, seed, data_kind, arch, configs):
     for penalty, lam in configs:
         t = time.time()
         pol = train_policy(env, wm, penalty, lam, data, gen, args.iters, batch=args.batch, lr=args.lr,
-                           member=args.member, hidden=args.pol_hidden)
+                           member=args.member, hidden=args.pol_hidden, horizon=args.horizon)
         ev = evaluate(env, pol, wm, gen)
         ev.update({"penalty": penalty, "lam": lam, "time": time.time() - t})
         # keep the weights so later metrics can be computed without retraining
@@ -487,6 +507,8 @@ def main():
     ap.add_argument("--pol_hidden", type=int, default=128)
     ap.add_argument("--seed_start", type=int, default=0)
     ap.add_argument("--no_agent_id", action="store_true", help="drop the agent id from the policy observation")
+    ap.add_argument("--horizon", type=int, default=T,
+                    help="model rollout length in policy training; below T, rollouts branch from logged states")
     ap.add_argument("--no_reference", action="store_true")
     ap.add_argument("--reference_only", action="store_true",
                     help="only train the true-dynamics oracle, to check the policy optimiser reaches the scripted best")

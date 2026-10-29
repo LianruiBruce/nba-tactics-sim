@@ -12,7 +12,8 @@ import numpy as np
 from scipy import stats
 
 ARCHS = ("additive", "joint", "attention")
-PENS = (("none", 0.0), ("ens", 1.0), ("ens", 5.0), ("agent_knn", 1.0), ("joint_knn", 1.0))
+ORDER = ("none", "ens", "ens_reward", "agent_knn", "pair_knn", "joint_knn")
+PENS = ()  # filled from the data: every (penalty, lam) present, none first
 
 
 def ms(xs):
@@ -41,6 +42,9 @@ def main():
         d = json.load(open(path))
         cells += d["cells"]
         refs += d["reference"]
+    global PENS
+    PENS = tuple(sorted({(p["penalty"], p["lam"]) for c in cells for p in c["policies"]},
+                        key=lambda x: (ORDER.index(x[0]) if x[0] in ORDER else 99, x[1])))
     oracle = {(r["n"], r["seed"]): r["oracle"]["true_return"] for r in refs}
     ns = sorted({c["n"] for c in cells})
 
