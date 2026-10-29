@@ -12,3 +12,4 @@ data/backtest
 data/lines
 data/models/forecast
 forecasts/
+research/joint_ood/spread_grid/*.pt

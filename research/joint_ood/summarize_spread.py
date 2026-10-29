@@ -52,9 +52,10 @@ def main():
 
     oracle = {(r["n"], r["seed"]): r["oracle"]["true_return"] for r in refs}
     print("\nPolicies: true return, regret vs oracle (oracle minus policy true return, paired by n and seed),\n"
-          "exploit gap (model minus true), duplicate rate, final coverage; mean ± 95% CI over seeds")
+          "exploit gap (model minus true), duplicate rate (any shared landmark; saturates at large n),\n"
+          "final coverage, fraction of landmarks uncovered (no agent within 2*RAD; missing in early runs); mean ± 95% CI over seeds")
     print(f"{'data':12} {'arch':10} {'n':>2} {'penalty':11} {'lam':>5} {'true_return':>14} {'regret_oracle':>14} "
-          f"{'exploit_gap':>14} {'dup_rate':>14} {'final_cov':>14} {'seeds':>5}")
+          f"{'exploit_gap':>14} {'dup_rate':>14} {'final_cov':>14} {'uncovered':>14} {'seeds':>5}")
     pg = defaultdict(list)
     for c in cells:
         for p in c["policies"]:
@@ -63,7 +64,7 @@ def main():
     for (data, arch, n, pen, lam), ps in sorted(pg.items()):
         print(f"{data:12} {arch:10} {n:2d} {pen:11} {lam:5g} {ci([p['true_return'] for p in ps])} "
               f"{ci([p['regret_oracle'] for p in ps])} {ci([p['exploit_gap'] for p in ps])} {ci([p['duplicate_rate'] for p in ps])} "
-              f"{ci([p.get('final_coverage', np.nan) for p in ps])} {len(ps):5d}")
+              f"{ci([p.get('final_coverage', np.nan) for p in ps])} {ci([p.get('uncovered_frac', np.nan) for p in ps])} {len(ps):5d}")
 
 
 if __name__ == "__main__":

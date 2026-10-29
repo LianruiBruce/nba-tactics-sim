@@ -97,6 +97,13 @@ def coverage(env, s):
     return d.min(1).values.mean().item()
 
 
+def uncovered_fraction(env, s, tol=2 * RAD):
+    """Fraction of landmarks with no agent within tol. Unlike duplicate_rate (any shared
+    landmark in the episode) it does not saturate at 1 for large n."""
+    d = torch.linalg.norm(s[..., :2][:, :, None] - env.L[None, None], dim=-1)
+    return (d.min(1).values > tol).float().mean().item()
+
+
 def duplicate_rate(env, s):
     p = s[..., :2]
     nearest = torch.linalg.norm(p[:, :, None] - env.L[None, None], dim=-1).argmin(-1)  # b, n
@@ -355,7 +362,8 @@ def evaluate(env, pol, wm, gen, episodes=2000):
     r_true, _, _, S, _ = rollout(env, pol, s0)
     s_final = env.step(S[:, -1], pol(env.obs(S[:, -1])))
     out = {"true_return": r_true.sum(1).mean().item(),
-           "duplicate_rate": duplicate_rate(env, s_final), "final_coverage": coverage(env, s_final)}
+           "duplicate_rate": duplicate_rate(env, s_final), "final_coverage": coverage(env, s_final),
+           "uncovered_frac": uncovered_fraction(env, s_final)}
     if wm is not None:
         r_mod, uf, _, _, _ = rollout(env, pol, s0, wm, member="mean")
         out["model_return"] = r_mod.sum(1).mean().item()
@@ -441,6 +449,8 @@ def run_cell(args, n, seed, data_kind, arch, configs):
                            member=args.member, hidden=args.pol_hidden)
         ev = evaluate(env, pol, wm, gen)
         ev.update({"penalty": penalty, "lam": lam, "time": time.time() - t})
+        # keep the weights so later metrics can be computed without retraining
+        torch.save(pol.state_dict(), os.path.splitext(args.out)[0] + f"_{data_kind}_{arch}_{penalty}{lam:g}.pt")
         res["policies"].append(ev)
         print(f"  policy {penalty}:{lam:g} {ev['time']:.0f}s", flush=True)
     return res
