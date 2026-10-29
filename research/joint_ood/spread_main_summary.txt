@@ -3,7 +3,7 @@ dynamics (the main reference). Scripted best = Hungarian assignment + tuned PD c
 upper bound the policy class does not reach.
   n=2: oracle  -2.726±1.008  scripted best (loose UB)  -2.531±0.937  oracle dup 0.00  oracle cov 0.002  scripted cov 0.000
   n=4: oracle  -2.454±0.255  scripted best (loose UB)  -1.698±0.229  oracle dup 0.00  oracle cov 0.002  scripted cov 0.000
-  n=8: oracle  -2.983±0.895  scripted best (loose UB)  -1.241±0.174  oracle dup 0.22  oracle cov 0.017  scripted cov 0.000
+  n=8: oracle  -2.906±0.642  scripted best (loose UB)  -1.250±0.120  oracle dup 0.18  oracle cov 0.014  scripted cov 0.000
 
 Reward-model diagnostics on three kinds of state (mean over seeds)
 data         arch        n kind         abs_err  optimism  ens_std  std/err
@@ -13,36 +13,36 @@ assignment   additive    2 uniform        0.116     0.043    0.044    0.386
 assignment   additive    4 assignment     0.012    -0.003    0.013    1.136
 assignment   additive    4 duplicate      0.278     0.277    0.015    0.054
 assignment   additive    4 uniform        0.107     0.062    0.042    0.393
-assignment   additive    8 assignment     0.031    -0.011    0.020    0.648
-assignment   additive    8 duplicate      0.219     0.211    0.020    0.094
-assignment   additive    8 uniform        0.228     0.216    0.047    0.207
+assignment   additive    8 assignment     0.029    -0.012    0.020    0.676
+assignment   additive    8 duplicate      0.221     0.214    0.020    0.091
+assignment   additive    8 uniform        0.225     0.214    0.045    0.200
 assignment   attention   2 assignment     0.004     0.000    0.004    1.103
 assignment   attention   2 duplicate      0.204     0.201    0.039    0.265
 assignment   attention   2 uniform        0.026     0.009    0.036    1.456
 assignment   attention   4 assignment     0.005    -0.001    0.007    1.367
 assignment   attention   4 duplicate      0.156     0.146    0.038    0.246
 assignment   attention   4 uniform        0.048     0.002    0.050    1.034
-assignment   attention   8 assignment     0.018    -0.002    0.023    1.282
-assignment   attention   8 duplicate      0.178     0.165    0.045    0.254
-assignment   attention   8 uniform        0.109     0.033    0.113    1.048
+assignment   attention   8 assignment     0.016    -0.002    0.021    1.308
+assignment   attention   8 duplicate      0.180     0.169    0.042    0.236
+assignment   attention   8 uniform        0.108     0.038    0.112    1.046
 assignment   joint       2 assignment     0.005     0.000    0.004    0.832
 assignment   joint       2 duplicate      0.080     0.066    0.045    0.745
 assignment   joint       2 uniform        0.030     0.005    0.035    1.180
 assignment   joint       4 assignment     0.018    -0.004    0.022    1.258
 assignment   joint       4 duplicate      0.164     0.118    0.047    0.289
 assignment   joint       4 uniform        0.106     0.065    0.097    0.910
-assignment   joint       8 assignment     0.040    -0.016    0.059    1.489
-assignment   joint       8 duplicate      0.203     0.187    0.064    0.315
-assignment   joint       8 uniform        0.160     0.100    0.150    0.943
+assignment   joint       8 assignment     0.040    -0.016    0.058    1.484
+assignment   joint       8 duplicate      0.203     0.188    0.063    0.312
+assignment   joint       8 uniform        0.158     0.096    0.152    0.961
 independent  additive    2 assignment     0.271    -0.270    0.020    0.078
 independent  additive    2 duplicate      0.296     0.294    0.022    0.075
 independent  additive    2 uniform        0.142     0.072    0.057    0.397
 independent  additive    4 assignment     0.404    -0.404    0.033    0.081
 independent  additive    4 duplicate      0.158    -0.121    0.034    0.214
 independent  additive    4 uniform        0.161     0.133    0.062    0.388
-independent  additive    8 assignment     0.735    -0.735    0.048    0.066
-independent  additive    8 duplicate      0.518    -0.517    0.049    0.095
-independent  additive    8 uniform        0.160     0.065    0.082    0.514
+independent  additive    8 assignment     0.742    -0.742    0.048    0.065
+independent  additive    8 duplicate      0.522    -0.521    0.050    0.095
+independent  additive    8 uniform        0.159     0.038    0.082    0.512
 independent  attention   2 assignment     0.005    -0.001    0.004    0.808
 independent  attention   2 duplicate      0.012    -0.001    0.014    1.099
 independent  attention   2 uniform        0.020    -0.003    0.036    1.872
@@ -76,11 +76,11 @@ assignment   additive    4 ens             1 -32.574±33.518  30.120±33.459  30
 assignment   additive    4 ens             5 -17.743±17.248  15.290±17.167  12.758±17.277   1.000±0.000   0.333±0.493   0.584±0.356     3
 assignment   additive    4 joint_knn       1  -8.801±4.921   6.347±5.174   5.883±5.642   0.716±0.619   0.121±0.077   0.241±0.249     3
 assignment   additive    4 none            0 -55.917±7.537  53.464±7.400  54.822±8.553   1.000±0.000   0.636±0.016   0.750±0.000     3
-assignment   additive    8 agent_knn       1 -65.231±63.656  62.216±61.956  72.405±82.349   1.000±0.000   0.960±2.476   1.000             3
-assignment   additive    8 ens             1 -37.124±17.437  34.109±16.763  45.718±33.565   1.000±0.000   1.166±2.206   1.000             3
-assignment   additive    8 ens             5 -25.373±5.520  22.357±5.162  25.487±5.916   1.000±0.000   0.343±0.132   0.688             3
-assignment   additive    8 joint_knn       1 -16.865±5.006  13.850±6.682  18.042±2.258   1.000±0.000   0.334±0.227   0.795             3
-assignment   additive    8 none            0 -60.350±10.571  57.335±8.922  99.680±35.441   1.000±0.000   4.913±1.586   1.000             3
+assignment   additive    8 agent_knn       1 -60.704±36.277  57.720±35.422  67.008±46.367   1.000±0.000   0.881±1.319   0.917±1.050     4
+assignment   additive    8 ens             1 -37.754±9.337  34.771±9.016  50.523±23.281   1.000±0.000   1.643±1.905   1.000±0.000     4
+assignment   additive    8 ens             5 -25.300±2.896  22.316±2.703  25.303±3.149   1.000±0.000   0.350±0.072   0.638±0.644     4
+assignment   additive    8 joint_knn       1 -15.875±4.097  12.891±4.638  16.872±3.906   1.000±0.000   0.338±0.119   0.756±0.498     4
+assignment   additive    8 none            0 -60.962±5.862  57.979±5.097 102.208±20.207   1.000±0.000   5.064±0.958   1.000±0.000     4
 assignment   attention   2 agent_knn       1  -3.470±2.265   0.743±1.267  -0.271±0.116   0.000±0.000   0.007±0.014   0.000±0.000     3
 assignment   attention   2 ens             1  -3.600±1.989   0.873±1.044  -0.215±0.079   0.000±0.000   0.010±0.021   0.000±0.000     3
 assignment   attention   2 ens             5  -4.509±2.119   1.783±1.192  -0.041±0.060   0.000±0.000   0.028±0.017   0.001±0.002     3
@@ -91,11 +91,11 @@ assignment   attention   4 ens             1  -3.409±0.478   0.955±0.374  -0.2
 assignment   attention   4 ens             5  -4.497±0.896   2.043±0.799   0.014±0.054   0.000±0.000   0.047±0.042   0.000±0.000     3
 assignment   attention   4 joint_knn       1  -3.624±0.333   1.170±0.080  -0.147±0.115   0.000±0.001   0.015±0.008   0.000±0.001     3
 assignment   attention   4 none            0  -2.683±0.394   0.229±0.173  -0.545±0.265   0.000±0.000   0.009±0.001   0.000±0.000     3
-assignment   attention   8 agent_knn       1 -12.012±17.253   8.997±15.553   8.287±18.101   1.000±0.001   0.165±0.192   0.451             3
-assignment   attention   8 ens             1  -8.081±8.397   5.065±6.708   3.960±9.430   0.808±0.526   0.152±0.171   0.436             3
-assignment   attention   8 ens             5  -7.044±1.166   4.029±2.687   1.908±1.560   0.934±0.143   0.145±0.059   0.212             3
-assignment   attention   8 joint_knn       1  -9.519±3.182   6.503±1.482   5.199±4.552   0.980±0.044   0.188±0.130   0.595             3
-assignment   attention   8 none            0 -13.096±21.495  10.081±19.795  10.636±26.660   1.000±0.000   0.567±1.420   0.959             3
+assignment   attention   8 agent_knn       1 -11.349±9.267   8.365±8.379   7.621±9.701   1.000±0.000   0.159±0.102   0.362±1.139     4
+assignment   attention   8 ens             1  -8.351±4.475   5.368±3.638   4.257±5.021   0.854±0.312   0.155±0.090   0.396±0.508     4
+assignment   attention   8 ens             5  -7.023±0.614   4.040±1.406   1.799±0.886   0.831±0.338   0.144±0.031   0.287±0.958     4
+assignment   attention   8 joint_knn       1  -9.882±2.026   6.898±1.477   5.526±2.599   0.985±0.027   0.199±0.076   0.571±0.304     4
+assignment   attention   8 none            0 -17.587±18.183  14.603±17.730  16.215±22.574   1.000±0.000   1.159±2.024   0.979±0.263     4
 assignment   joint       2 agent_knn       1  -3.505±2.287   0.779±1.288  -0.305±0.269   0.000±0.000   0.011±0.029   0.000±0.001     3
 assignment   joint       2 ens             1  -3.795±2.553   1.069±1.576  -0.150±0.623   0.000±0.000   0.020±0.057   0.000±0.000     3
 assignment   joint       2 ens             5  -4.641±2.477   1.915±1.473  -0.066±0.294   0.000±0.000   0.025±0.031   0.003±0.015     3
@@ -106,11 +106,11 @@ assignment   joint       4 ens             1  -5.140±1.163   2.686±0.908   1.1
 assignment   joint       4 ens             5  -5.879±1.403   3.425±1.215   1.463±1.532   0.117±0.174   0.091±0.056   0.181±0.303     3
 assignment   joint       4 joint_knn       1  -4.717±1.071   2.264±0.818   1.107±1.341   0.042±0.099   0.064±0.033   0.052±0.098     3
 assignment   joint       4 none            0 -26.375±4.905  23.922±4.659  25.724±6.071   0.817±0.787   1.734±0.457   1.000±0.000     3
-assignment   joint       8 agent_knn       1 -12.672±1.419   9.689±0.774  11.233±1.675   0.999±0.003   0.294±0.160   0.515±0.537     4
-assignment   joint       8 ens             1 -10.234±0.323   7.251±0.865   7.656±0.854   0.986±0.001   0.287±0.056   0.838±0.080     4
-assignment   joint       8 ens             5 -11.226±0.346   8.243±1.021   7.021±0.393   0.997±0.002   0.294±0.061   0.846±0.092     4
-assignment   joint       8 joint_knn       1  -9.576±0.783   6.593±0.613   7.906±1.385   0.988±0.011   0.272±0.076   0.812±0.052     4
-assignment   joint       8 none            0 -32.844±18.469  29.861±18.319  44.572±21.726   1.000±0.000   2.594±2.034   1.000±0.001     4
+assignment   joint       8 agent_knn       1 -12.696±0.961   9.791±0.594  11.046±1.245   0.999±0.002   0.278±0.117   0.514±0.105     5
+assignment   joint       8 ens             1 -10.240±0.219   7.334±0.628   7.494±0.732   0.986±0.001   0.277±0.047   0.802±0.155     5
+assignment   joint       8 ens             5 -11.274±0.269   8.369±0.773   7.051±0.278   0.997±0.001   0.286±0.047   0.819±0.115     5
+assignment   joint       8 joint_knn       1  -9.607±0.536   6.702±0.513   7.741±1.042   0.987±0.008   0.264±0.056   0.774±0.164     5
+assignment   joint       8 none            0 -30.910±13.586  28.005±13.409  44.172±14.724   1.000±0.000   2.528±1.387   1.000±0.000     5
 independent  additive    2 agent_knn       1 -13.067±4.092  10.340±3.092   5.723±5.373   0.763±1.018   0.464±0.403   0.998±0.005     3
 independent  additive    2 ens             1 -13.034±20.532  10.308±19.549   5.319±13.982   0.534±0.441   0.443±0.914   0.817±0.665     3
 independent  additive    2 ens             5 -12.285±18.863   9.559±17.909   2.923±9.505   0.667±1.434   0.419±0.971   0.508±0.033     3
@@ -121,11 +121,11 @@ independent  additive    4 ens             1 -16.332±6.100  13.879±5.959  16.4
 independent  additive    4 ens             5 -12.361±6.016   9.907±5.915   7.251±10.348   0.878±0.523   0.370±0.133   0.883±0.282     3
 independent  additive    4 joint_knn       1 -20.465±5.575  18.011±5.327  21.084±6.890   1.000±0.000   0.545±0.601   1.000±0.000     3
 independent  additive    4 none            0 -58.211±7.756  55.757±7.987  69.460±24.976   1.000±0.000   5.071±1.302   1.000±0.000     3
-independent  additive    8 agent_knn       1 -55.796±26.882  52.781±28.549  60.486±41.275   1.000±0.000   0.951±0.192   0.881±0.021     3
-independent  additive    8 ens             1 -30.142±6.115  27.127±6.777  35.677±9.219   1.000±0.000   0.927±0.479   0.987±0.166     3
-independent  additive    8 ens             5 -22.741±22.891  19.726±21.258  18.685±20.441   1.000±0.000   0.494±0.583   0.877±0.013     3
-independent  additive    8 joint_knn       1 -18.512±3.059  15.497±2.520  20.093±4.870   1.000±0.000   0.526±0.159   0.950±0.236     3
-independent  additive    8 none            0 -49.386±12.410  46.371±10.935  75.566±20.038   1.000±0.000   3.483±0.830   1.000±0.000     3
+independent  additive    8 agent_knn       1 -49.280±25.055  46.297±25.472  51.529±35.756   1.000±0.000   0.861±0.303   0.879±0.007     4
+independent  additive    8 ens             1 -30.294±3.235  27.311±3.593  34.226±6.676   1.000±0.000   0.906±0.259   0.988±0.033     4
+independent  additive    8 ens             5 -21.986±12.211  19.003±11.354  18.009±10.905   1.000±0.000   0.505±0.307   0.838±0.168     4
+independent  additive    8 joint_knn       1 -20.392±6.193  17.409±6.225  20.828±3.459   1.000±0.000   0.559±0.134   0.937±0.072     4
+independent  additive    8 none            0 -45.215±14.777  42.231±14.361  64.976±35.295   1.000±0.000   2.859±2.031   0.992±0.034     4
 independent  attention   2 agent_knn       1  -3.489±2.412   0.762±1.419  -0.302±0.316   0.000±0.000   0.012±0.037   0.000±0.000     3
 independent  attention   2 ens             1  -3.646±2.220   0.919±1.231  -0.297±0.067   0.000±0.000   0.011±0.010   0.000±0.001     3
 independent  attention   2 ens             5  -4.611±2.664   1.885±1.656  -0.117±0.164   0.000±0.000   0.029±0.037   0.001±0.006     3
