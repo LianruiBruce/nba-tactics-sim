@@ -1,0 +1,34 @@
+Pilot 1 port check: JAX reference vs PyTorch port, same config (n=2,4; seeds 0-1; additive, joint), CPU, 2026-10-29.
+RNGs differ, so numbers match statistically, not bit for bit.
+
+== JAX ==
+Diagnostics: model error and ensemble std on three kinds of joint action
+arch        n kind                    abs_err  optimism  ens_std  std/err  AUROC
+additive    2 in_dist                   0.006    -0.001    0.006    0.965       
+additive    2 marginal_in_joint_out     0.893     0.893    0.038    0.042  1.000
+additive    2 uniform_ood               0.334    -0.170    0.186    0.555  0.999
+additive    4 in_dist                   0.007    -0.002    0.008    1.127       
+additive    4 marginal_in_joint_out     0.408     0.408    0.020    0.049  0.932
+additive    4 uniform_ood               0.342    -0.302    0.113    0.350  0.996
+joint       2 in_dist                   0.005     0.001    0.004    0.913       
+joint       2 marginal_in_joint_out     0.159     0.045    0.256    1.774  1.000
+joint       2 uniform_ood               0.161    -0.021    0.142    0.883  0.999
+joint       4 in_dist                   0.009     0.000    0.007    0.783       
+joint       4 marginal_in_joint_out     0.470    -0.453    0.093    0.198  1.000
+joint       4 uniform_ood               0.515    -0.514    0.114    0.222  1.000
+
+== PyTorch ==
+Diagnostics: model error and ensemble std on three kinds of joint action
+arch        n kind                    abs_err  optimism  ens_std  std/err  AUROC
+additive    2 in_dist                   0.005     0.002    0.005    1.072       
+additive    2 marginal_in_joint_out     0.894     0.894    0.072    0.081  1.000
+additive    2 uniform_ood               0.324    -0.158    0.182    0.555  0.998
+additive    4 in_dist                   0.007    -0.002    0.006    0.827       
+additive    4 marginal_in_joint_out     0.416     0.416    0.017    0.041  0.954
+additive    4 uniform_ood               0.386    -0.349    0.085    0.226  0.998
+joint       2 in_dist                   0.005    -0.001    0.004    0.904       
+joint       2 marginal_in_joint_out     0.157     0.008    0.213    1.589  1.000
+joint       2 uniform_ood               0.158    -0.030    0.120    0.763  0.999
+joint       4 in_dist                   0.009     0.001    0.007    0.807       
+joint       4 marginal_in_joint_out     0.466    -0.447    0.086    0.185  1.000
+joint       4 uniform_ood               0.503    -0.502    0.108    0.216  1.000
