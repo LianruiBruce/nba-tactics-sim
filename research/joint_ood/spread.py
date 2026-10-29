@@ -33,6 +33,7 @@ Run:  python research/joint_ood/spread.py --out spread.json
 import argparse
 import json
 import math
+import os
 import time
 
 import numpy as np
@@ -484,7 +485,11 @@ def main():
     print(f"device: {DEV}", flush=True)
     configs = [(c.split(":")[0], float(c.split(":")[1])) for c in args.configs.split(",")]
     out = {"args": vars(args), "cells": [], "reference": []}
-    save = lambda: json.dump(out, open(args.out, "w"), indent=1)
+    def save():  # write then rename, so a kill mid-write never leaves a truncated file
+        with open(args.out + ".tmp", "w") as f:
+            json.dump(out, f, indent=1)
+        os.replace(args.out + ".tmp", args.out)
+
     for n in [int(x) for x in args.ns.split(",")]:
         for seed in range(args.seed_start, args.seed_start + args.seeds):
             if not args.no_reference:
