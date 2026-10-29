@@ -13,6 +13,9 @@ from scipy import stats
 
 def ci(xs):
     xs = np.asarray(xs, float)
+    xs = xs[~np.isnan(xs)]  # metrics added later are missing from early runs
+    if len(xs) == 0:
+        return f"{'-':>7}        "
     if len(xs) < 2:
         return f"{xs.mean():7.3f}        "
     h = stats.t.ppf(0.975, len(xs) - 1) * xs.std(ddof=1) / np.sqrt(len(xs))
