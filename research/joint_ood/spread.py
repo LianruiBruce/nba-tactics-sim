@@ -272,7 +272,7 @@ class KNN:
     gradient in chunks; the distance to it carries the gradient, which is the
     same gradient as the min over all points."""
 
-    def __init__(self, ref, max_ref=50000, gen=None, chunk=4096):
+    def __init__(self, ref, max_ref=50000, gen=None, chunk=1024):  # chunk only bounds memory (cdist is chunk x ref)
         if ref.shape[0] > max_ref:
             ref = ref[torch.randperm(ref.shape[0], generator=gen, device=DEV)[:max_ref]]
         self.mu, self.sd = ref.mean(0), ref.std(0) + 1e-6
