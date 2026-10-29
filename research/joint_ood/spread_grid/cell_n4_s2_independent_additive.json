@@ -1,0 +1,118 @@
+{
+ "args": {
+  "ns": "4",
+  "seeds": 1,
+  "archs": "additive",
+  "data": "independent",
+  "configs": "none:0,ens:1,ens:5,agent_knn:1,joint_knn:1",
+  "episodes": 4000,
+  "ensemble": 5,
+  "wm_steps": 6000,
+  "iters": 2000,
+  "member": "random",
+  "lr": 0.001,
+  "batch": 256,
+  "pol_hidden": 128,
+  "seed_start": 2,
+  "no_agent_id": false,
+  "no_reference": true,
+  "reference_only": false,
+  "out": "research/joint_ood/spread_grid\\cell_n4_s2_independent_additive.json"
+ },
+ "cells": [
+  {
+   "n": 4,
+   "seed": 2,
+   "data": "independent",
+   "arch": "additive",
+   "ensemble": 5,
+   "agent_id": true,
+   "episodes": 4000,
+   "wm_time": 36.00431251525879,
+   "behaviour_return": -10.708084106445312,
+   "diag": {
+    "assignment": {
+     "abs_err": 0.39588162302970886,
+     "optimism": -0.39583608508110046,
+     "ens_std": 0.0333668477833271,
+     "std_over_err": 0.08428490906953812
+    },
+    "duplicate": {
+     "abs_err": 0.15443812310695648,
+     "optimism": -0.11713831126689911,
+     "ens_std": 0.03468499332666397,
+     "std_over_err": 0.2245882898569107
+    },
+    "uniform": {
+     "abs_err": 0.16596479713916779,
+     "optimism": 0.1437109410762787,
+     "ens_std": 0.05215274542570114,
+     "std_over_err": 0.3142397999763489
+    }
+   },
+   "policies": [
+    {
+     "true_return": -61.628456115722656,
+     "duplicate_rate": 1.0,
+     "final_coverage": 5.529361724853516,
+     "uncovered_frac": 1.0,
+     "model_return": 15.998054504394531,
+     "exploit_gap": 77.62651062011719,
+     "mean_uncertainty": 2.2309982776641846,
+     "penalty": "none",
+     "lam": 0.0,
+     "time": 471.25026845932007
+    },
+    {
+     "true_return": -14.458473205566406,
+     "duplicate_rate": 1.0,
+     "final_coverage": 0.4687712490558624,
+     "uncovered_frac": 1.0,
+     "model_return": 0.07159572094678879,
+     "exploit_gap": 14.530068926513195,
+     "mean_uncertainty": 0.17067673802375793,
+     "penalty": "ens",
+     "lam": 1.0,
+     "time": 575.3865818977356
+    },
+    {
+     "true_return": -11.525856018066406,
+     "duplicate_rate": 0.6350000500679016,
+     "final_coverage": 0.40632155537605286,
+     "uncovered_frac": 1.0,
+     "model_return": -2.2495479583740234,
+     "exploit_gap": 9.276308059692383,
+     "mean_uncertainty": 0.10054107010364532,
+     "penalty": "ens",
+     "lam": 5.0,
+     "time": 518.4252564907074
+    },
+    {
+     "true_return": -24.379724502563477,
+     "duplicate_rate": 0.8265000581741333,
+     "final_coverage": 0.3961603045463562,
+     "uncovered_frac": 1.0,
+     "model_return": 1.0314741134643555,
+     "exploit_gap": 25.411198616027832,
+     "mean_uncertainty": 0.1904253512620926,
+     "penalty": "agent_knn",
+     "lam": 1.0,
+     "time": 651.0332605838776
+    },
+    {
+     "true_return": -17.887134552001953,
+     "duplicate_rate": 1.0,
+     "final_coverage": 0.34543341398239136,
+     "uncovered_frac": 1.0,
+     "model_return": -0.002744360128417611,
+     "exploit_gap": 17.884390191873536,
+     "mean_uncertainty": 0.162921741604805,
+     "penalty": "joint_knn",
+     "lam": 1.0,
+     "time": 513.485680103302
+    }
+   ]
+  }
+ ],
+ "reference": []
+}
