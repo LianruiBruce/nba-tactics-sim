@@ -55,6 +55,9 @@ def main():
     ap.add_argument("--exclude", default="", help="comma-separated job names to skip (e.g. already running)")
     ap.add_argument("extra", nargs="*", help="passed through to spread.py, after --")
     args = ap.parse_args()
+    clash = {"--out", "--ns", "--seeds", "--seed_start", "--data", "--archs", "--configs"} & set(args.extra)
+    if clash:  # launcher options placed after "--" would silently reach spread.py instead
+        ap.error(f"{sorted(clash)} after '--' would be passed to spread.py; put launcher options before '--'")
     os.makedirs(args.out, exist_ok=True)
     specs = []
     for n in args.ns.split(","):
