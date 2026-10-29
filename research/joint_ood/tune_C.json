@@ -1,0 +1,113 @@
+{
+ "args": {
+  "ns": "2,4,8",
+  "seeds": 2,
+  "archs": "joint,additive,attention",
+  "data": "assignment,independent",
+  "configs": "none:0,ens:1,ens:5,ens_reward:5,agent_knn:1,joint_knn:1",
+  "episodes": 4000,
+  "ensemble": 5,
+  "wm_steps": 6000,
+  "iters": 4000,
+  "member": "random",
+  "lr": 0.001,
+  "batch": 256,
+  "pol_hidden": 256,
+  "no_reference": false,
+  "reference_only": true,
+  "out": "research/joint_ood/tune_C.json"
+ },
+ "cells": [],
+ "reference": [
+  {
+   "n": 2,
+   "seed": 0,
+   "oracle": {
+    "true_return": -2.546712636947632,
+    "duplicate_rate": 0.0,
+    "final_coverage": 0.0011163909221068025
+   },
+   "scripted_best": -2.421541213989258,
+   "scripted_coverage": 3.652872919701622e-07,
+   "scripted_gains": [
+    8.0,
+    1.0
+   ]
+  },
+  {
+   "n": 2,
+   "seed": 1,
+   "oracle": {
+    "true_return": -2.3429667949676514,
+    "duplicate_rate": 0.0,
+    "final_coverage": 0.002171614207327366
+   },
+   "scripted_best": -2.173224449157715,
+   "scripted_coverage": 1.702691179161775e-07,
+   "scripted_gains": [
+    8.0,
+    1.0
+   ]
+  },
+  {
+   "n": 4,
+   "seed": 0,
+   "oracle": {
+    "true_return": -2.519073247909546,
+    "duplicate_rate": 0.0,
+    "final_coverage": 0.0032269791699945927
+   },
+   "scripted_best": -1.7143011093139648,
+   "scripted_coverage": 2.112360419914694e-07,
+   "scripted_gains": [
+    8.0,
+    1.0
+   ]
+  },
+  {
+   "n": 4,
+   "seed": 1,
+   "oracle": {
+    "true_return": -2.4910993576049805,
+    "duplicate_rate": 0.0,
+    "final_coverage": 0.003164989408105612
+   },
+   "scripted_best": -1.7320208549499512,
+   "scripted_coverage": 2.3412667360389605e-07,
+   "scripted_gains": [
+    8.0,
+    1.0
+   ]
+  },
+  {
+   "n": 8,
+   "seed": 0,
+   "oracle": {
+    "true_return": -3.355217933654785,
+    "duplicate_rate": 1.0,
+    "final_coverage": 0.04998728260397911
+   },
+   "scripted_best": -1.3582061529159546,
+   "scripted_coverage": 1.1067169936040955e-07,
+   "scripted_gains": [
+    8.0,
+    1.0
+   ]
+  },
+  {
+   "n": 8,
+   "seed": 1,
+   "oracle": {
+    "true_return": -3.350881338119507,
+    "duplicate_rate": 1.0,
+    "final_coverage": 0.0467439740896225
+   },
+   "scripted_best": -1.1914550065994263,
+   "scripted_coverage": 7.726383444150997e-08,
+   "scripted_gains": [
+    8.0,
+    1.0
+   ]
+  }
+ ]
+}
