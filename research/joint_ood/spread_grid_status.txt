@@ -1,0 +1,22 @@
+spread.py main grid, RTX 4080 (Windows), status as of 2026-10-29 02:15 local (06:15Z)
+
+launch     2026-10-29 01:13:12 local (05:13Z)
+command    run_spread_grid.py --ns 2,4,8 --seeds 3 --workers 5 --out research/joint_ood/spread_grid
+launcher   pid 62264, detached (Start-Process), logs in spread_grid/runner_main.log and <job>.log
+workers    5 (6 peaked at 12.5 GB in smoke test T4b; 5 keeps memory around 9.5-10.5 GB)
+configs    none:0, ens:1, ens:5, agent_knn:1, joint_knn:1; iters 2000; data assignment, independent; archs joint, additive, attention
+jobs       9 references + 54 cells (ref_n8_s0/s1 were already done and are skipped)
+
+measured (n=8, 5-way contention)
+  cell_n8_s0_assignment_joint    3672 s total; world model 32 s; policies none 517, ens:1 499, ens:5 496, agent_knn 1415, joint_knn 710 s
+  cell_n8_s0_independent_joint   about the same
+  GPU at that point: 97% util, 9.5 GB, 162 W
+
+ETA (from these times, attention about 1.3x joint, n=4 about 0.6x, n=2 about 0.5x of n=8)
+  n=8 block   about 05:15 local
+  n=4 block   about 07:45 local
+  n=2 block   about 09:45 local
+  whole grid  about 10:00 local (14:00Z)
+
+resume after any interruption (skips finished jobs):
+  C:\Users\gengl\venvs\torch-cu124\Scripts\python.exe research/joint_ood/run_spread_grid.py --ns 2,4,8 --seeds 3 --workers 5 --out research/joint_ood/spread_grid
