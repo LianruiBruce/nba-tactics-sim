@@ -32,8 +32,11 @@ function Stage($what, $out, $gridArgs) {
 Say "waiting for pid $WaitPid"
 # pid 0 is the Idle process on Windows and always exists, so 0 means "don't wait"
 while ($WaitPid -gt 0 -and (Get-Process -Id $WaitPid -ErrorAction SilentlyContinue)) { Start-Sleep 60 }
+# never overlap spread.py jobs left running by an earlier launcher (they finish and save on their own)
+while (Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'spread\.py' -and $_.CommandLine -notmatch 'run_spread_grid' }) { Start-Sleep 60 }
 Say "chain start"
+# horizon stages first (cheap); pair_knn is ~10x slower per policy at n=8, so it runs last
+Stage "horizon 5" "$J/abl_h5" "--ns 4,8 --seeds 3 --data assignment --configs none:0,ens:1,joint_knn:1 -- --horizon 5"
+Stage "horizon 10" "$J/abl_h10" "--ns 4,8 --seeds 3 --data assignment --configs none:0,ens:1,joint_knn:1 -- --horizon 10"
 Stage "pair_knn on main grid" "$J/spread_pair" "--ns 2,4,8 --seeds 5 --seed_start 0 --configs pair_knn:1"
-Stage "horizon 5" "$J/abl_h5" "--ns 4,8 --seeds 3 --data assignment --configs none:0,ens:1,joint_knn:1,pair_knn:1 -- --horizon 5"
-Stage "horizon 10" "$J/abl_h10" "--ns 4,8 --seeds 3 --data assignment --configs none:0,ens:1,joint_knn:1,pair_knn:1 -- --horizon 10"
 Say "chain done"
