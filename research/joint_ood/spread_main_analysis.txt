@@ -4,11 +4,11 @@ Oracle true return by n: {2: np.float64(-2.836), 4: np.float64(-2.76), 8: np.flo
 arch         n=2: optimism  std/err   n=4: optimism  std/err   n=8: optimism  std/err
 additive       0.60± 0.28   0.02     0.27± 0.03   0.05     0.21± 0.02   0.09
 joint          0.09± 0.07   0.64     0.12± 0.01   0.30     0.19± 0.01   0.31
-attention      0.22± 0.16   0.23     0.14± 0.03   0.29     0.17± 0.02   0.24
+attention      0.22± 0.11   0.21     0.14± 0.03   0.29     0.17± 0.02   0.24
    same, independent data (crowding present in the data):
-additive       0.32± 0.20   0.07    -0.12± 0.01   0.21    -0.51± 0.03   0.10
-joint          0.00± 0.00   0.79    -0.00± 0.01   0.84    -0.36± 0.03   0.72
-attention      0.00± 0.01   1.14     0.00± 0.01   1.41    -0.01± 0.01   1.01
+additive       0.31± 0.14   0.07    -0.12± 0.01   0.21    -0.51± 0.03   0.10
+joint          0.00± 0.00   0.78    -0.00± 0.01   0.84    -0.36± 0.03   0.72
+attention     -0.00± 0.01   1.20     0.00± 0.01   1.41    -0.01± 0.01   1.01
 
 2. Regret vs oracle, assignment data (mean ± 95% CI over seeds)
 arch       penalty                  n=2             n=4             n=8
@@ -22,47 +22,47 @@ joint      ens:1           0.89± 0.65    2.53± 0.47    7.33± 0.63
 joint      ens:5           1.82± 0.58    3.00± 1.12    8.37± 0.77
 joint      agent_knn:1     0.63± 0.53    1.18± 1.23    9.79± 0.59
 joint      joint_knn:1     1.08± 0.50    2.06± 0.52    6.70± 0.51
-attention  none:0         -0.01± 0.30   -0.09± 0.92   13.41±12.43
-attention  ens:1           0.78± 0.62    0.63± 0.90    4.75± 3.00
-attention  ens:5           1.85± 0.66    1.63± 1.05    3.85± 1.09
-attention  agent_knn:1     0.63± 0.75    0.18± 0.89    8.18± 5.69
-attention  joint_knn:1     0.76± 0.29    0.87± 0.84    6.98± 1.02
+attention  none:0          0.03± 0.23   -0.09± 0.92   13.41±12.43
+attention  ens:1           0.76± 0.42    0.63± 0.90    4.75± 3.00
+attention  ens:5           1.88± 0.45    1.63± 1.05    3.85± 1.09
+attention  agent_knn:1     0.57± 0.54    0.18± 0.89    8.18± 5.69
+attention  joint_knn:1     0.80± 0.23    0.87± 0.84    6.98± 1.02
 
 2. Regret vs oracle, independent data (mean ± 95% CI over seeds)
 arch       penalty                  n=2             n=4             n=8
-additive   none:0         39.46±31.61   60.47± 8.90   44.52±11.59
-additive   ens:1          10.63±10.27   13.02± 4.15   26.57± 3.18
-additive   ens:5          10.68±10.02   10.30± 2.91   16.97± 9.52
-additive   agent_knn:1    12.16± 6.02   23.82±11.05   42.93±19.59
-additive   joint_knn:1    12.56± 8.12   19.04±10.31   15.87± 5.99
-joint      none:0          0.77± 2.13   30.87±18.01   36.12± 4.86
-joint      ens:1           1.08± 1.22    4.09± 1.57   13.81± 7.37
-joint      ens:5           2.12± 0.51    3.44± 1.21   15.75± 2.83
-joint      agent_knn:1     1.03± 1.52    7.64± 2.86    7.45± 2.41
-joint      joint_knn:1     1.31± 1.40    7.80± 4.25    9.20± 2.10
-attention  none:0          0.29± 1.10    0.04± 0.67    2.24± 0.57
-attention  ens:1           0.83± 0.70    0.74± 0.65    2.49± 0.57
-attention  ens:5           1.75± 0.97    1.87± 0.32    3.68± 1.01
-attention  agent_knn:1     0.72± 0.75    0.29± 0.82    2.27± 0.48
-attention  joint_knn:1     1.05± 0.60    1.04± 0.62    3.89± 0.53
+additive   none:0         34.64±25.21   60.47± 8.90   44.52±11.59
+additive   ens:1           9.88± 7.25   13.02± 4.15   26.57± 3.18
+additive   ens:5          10.03± 7.00   10.30± 2.91   16.97± 9.52
+additive   agent_knn:1    10.91± 5.36   23.82±11.05   42.93±19.59
+additive   joint_knn:1    12.21± 5.57   19.04±10.31   15.87± 5.99
+joint      none:0          0.68± 1.46   30.87±18.01   36.12± 4.86
+joint      ens:1           1.02± 0.83    4.09± 1.57   13.81± 7.37
+joint      ens:5           2.12± 0.34    3.44± 1.21   15.75± 2.83
+joint      agent_knn:1     0.97± 1.04    7.64± 2.86    7.45± 2.41
+joint      joint_knn:1     1.26± 0.96    7.80± 4.25    9.20± 2.10
+attention  none:0          0.28± 0.75    0.04± 0.67    2.24± 0.57
+attention  ens:1           0.80± 0.48    0.74± 0.65    2.49± 0.57
+attention  ens:5           1.73± 0.66    1.87± 0.32    3.68± 1.01
+attention  agent_knn:1     0.70± 0.51    0.29± 0.82    2.27± 0.48
+attention  joint_knn:1     1.04± 0.41    1.04± 0.62    3.89± 0.53
 
 3. Causal control: regret(assignment) - regret(independent), paired by seed. Positive = the
    crowding-free data makes things worse, as expected if the failure is joint-action OOD
-additive   none:0        n=2:  -21.51 (n=4, p=0.075)  n=4:  -10.81 (n=5, p=0.119)  n=8:   13.24 (n=5, p=0.045)
-additive   ens:1         n=2:    6.42 (n=4, p=0.008)  n=4:   16.55 (n=5, p=0.030)  n=8:    7.81 (n=5, p=0.062)
-additive   ens:5         n=2:   -1.38 (n=4, p=0.761)  n=4:    5.29 (n=5, p=0.027)  n=8:    4.23 (n=5, p=0.201)
-additive   agent_knn:1   n=2:    4.62 (n=4, p=0.112)  n=4:   17.34 (n=5, p=0.018)  n=8:   15.25 (n=5, p=0.280)
-additive   joint_knn:1   n=2:  -10.97 (n=4, p=0.024)  n=4:  -13.06 (n=5, p=0.010)  n=8:   -2.93 (n=5, p=0.364)
-joint      none:0        n=2:   -0.37 (n=4, p=0.342)  n=4:   -3.66 (n=5, p=0.549)  n=8:   -8.12 (n=5, p=0.223)
-joint      ens:1         n=2:   -0.17 (n=4, p=0.193)  n=4:   -1.56 (n=5, p=0.036)  n=8:   -6.48 (n=5, p=0.070)
-joint      ens:5         n=2:   -0.32 (n=4, p=0.094)  n=4:   -0.44 (n=5, p=0.001)  n=8:   -7.38 (n=5, p=0.001)
-joint      agent_knn:1   n=2:   -0.36 (n=4, p=0.251)  n=4:   -6.47 (n=5, p=0.008)  n=8:    2.34 (n=5, p=0.043)
-joint      joint_knn:1   n=2:   -0.20 (n=4, p=0.427)  n=4:   -5.74 (n=5, p=0.028)  n=8:   -2.50 (n=5, p=0.014)
-attention  none:0        n=2:   -0.30 (n=4, p=0.361)  n=4:   -0.13 (n=5, p=0.241)  n=8:   11.16 (n=5, p=0.065)
-attention  ens:1         n=2:   -0.05 (n=4, p=0.408)  n=4:   -0.11 (n=5, p=0.409)  n=8:    2.26 (n=5, p=0.146)
-attention  ens:5         n=2:    0.11 (n=4, p=0.704)  n=4:   -0.24 (n=5, p=0.517)  n=8:    0.17 (n=5, p=0.824)
-attention  agent_knn:1   n=2:   -0.09 (n=4, p=0.319)  n=4:   -0.11 (n=5, p=0.029)  n=8:    5.91 (n=5, p=0.052)
-attention  joint_knn:1   n=2:   -0.29 (n=4, p=0.311)  n=4:   -0.17 (n=5, p=0.202)  n=8:    3.09 (n=5, p=0.000)
+additive   none:0        n=2:  -16.92 (n=5, p=0.094)  n=4:  -10.81 (n=5, p=0.119)  n=8:   13.24 (n=5, p=0.045)
+additive   ens:1         n=2:    6.99 (n=5, p=0.002)  n=4:   16.55 (n=5, p=0.030)  n=8:    7.81 (n=5, p=0.062)
+additive   ens:5         n=2:    0.15 (n=5, p=0.968)  n=4:    5.29 (n=5, p=0.027)  n=8:    4.23 (n=5, p=0.201)
+additive   agent_knn:1   n=2:    5.66 (n=5, p=0.042)  n=4:   17.34 (n=5, p=0.018)  n=8:   15.25 (n=5, p=0.280)
+additive   joint_knn:1   n=2:  -10.74 (n=5, p=0.006)  n=4:  -13.06 (n=5, p=0.010)  n=8:   -2.93 (n=5, p=0.364)
+joint      none:0        n=2:   -0.34 (n=5, p=0.252)  n=4:   -3.66 (n=5, p=0.549)  n=8:   -8.12 (n=5, p=0.223)
+joint      ens:1         n=2:   -0.13 (n=5, p=0.199)  n=4:   -1.56 (n=5, p=0.036)  n=8:   -6.48 (n=5, p=0.070)
+joint      ens:5         n=2:   -0.30 (n=5, p=0.049)  n=4:   -0.44 (n=5, p=0.001)  n=8:   -7.38 (n=5, p=0.001)
+joint      agent_knn:1   n=2:   -0.34 (n=5, p=0.163)  n=4:   -6.47 (n=5, p=0.008)  n=8:    2.34 (n=5, p=0.043)
+joint      joint_knn:1   n=2:   -0.18 (n=5, p=0.334)  n=4:   -5.74 (n=5, p=0.028)  n=8:   -2.50 (n=5, p=0.014)
+attention  none:0        n=2:   -0.25 (n=5, p=0.327)  n=4:   -0.13 (n=5, p=0.241)  n=8:   11.16 (n=5, p=0.065)
+attention  ens:1         n=2:   -0.04 (n=5, p=0.457)  n=4:   -0.11 (n=5, p=0.409)  n=8:    2.26 (n=5, p=0.146)
+attention  ens:5         n=2:    0.15 (n=5, p=0.498)  n=4:   -0.24 (n=5, p=0.517)  n=8:    0.17 (n=5, p=0.824)
+attention  agent_knn:1   n=2:   -0.14 (n=5, p=0.142)  n=4:   -0.11 (n=5, p=0.029)  n=8:    5.91 (n=5, p=0.052)
+attention  joint_knn:1   n=2:   -0.24 (n=5, p=0.277)  n=4:   -0.17 (n=5, p=0.202)  n=8:    3.09 (n=5, p=0.000)
 
 4. Penalty effect: regret(none) - regret(penalty), assignment data, paired by seed. Positive = penalty helps
 additive   ens:1         n=2:    0.86 (n=5, p=0.001)  n=4:   20.09 (n=5, p=0.007)  n=8:   23.38 (n=5, p=0.001)
@@ -73,10 +73,10 @@ joint      ens:1         n=2:   -0.55 (n=5, p=0.002)  n=4:   24.68 (n=5, p=0.000
 joint      ens:5         n=2:   -1.48 (n=5, p=0.000)  n=4:   24.21 (n=5, p=0.000)  n=8:   19.64 (n=5, p=0.016)
 joint      agent_knn:1   n=2:   -0.29 (n=5, p=0.039)  n=4:   26.04 (n=5, p=0.000)  n=8:   18.21 (n=5, p=0.019)
 joint      joint_knn:1   n=2:   -0.74 (n=5, p=0.002)  n=4:   25.16 (n=5, p=0.000)  n=8:   21.30 (n=5, p=0.012)
-attention  ens:1         n=2:   -0.79 (n=4, p=0.010)  n=4:   -0.72 (n=5, p=0.000)  n=8:    8.66 (n=5, p=0.080)
-attention  ens:5         n=2:   -1.86 (n=4, p=0.004)  n=4:   -1.72 (n=5, p=0.000)  n=8:    9.56 (n=5, p=0.107)
-attention  agent_knn:1   n=2:   -0.64 (n=4, p=0.037)  n=4:   -0.27 (n=5, p=0.000)  n=8:    5.23 (n=5, p=0.277)
-attention  joint_knn:1   n=2:   -0.77 (n=4, p=0.005)  n=4:   -0.95 (n=5, p=0.000)  n=8:    6.43 (n=5, p=0.197)
+attention  ens:1         n=2:   -0.74 (n=5, p=0.003)  n=4:   -0.72 (n=5, p=0.000)  n=8:    8.66 (n=5, p=0.080)
+attention  ens:5         n=2:   -1.85 (n=5, p=0.000)  n=4:   -1.72 (n=5, p=0.000)  n=8:    9.56 (n=5, p=0.107)
+attention  agent_knn:1   n=2:   -0.54 (n=5, p=0.035)  n=4:   -0.27 (n=5, p=0.000)  n=8:    5.23 (n=5, p=0.277)
+attention  joint_knn:1   n=2:   -0.77 (n=5, p=0.001)  n=4:   -0.95 (n=5, p=0.000)  n=8:    6.43 (n=5, p=0.197)
 
 5. Exploit gap (model return - true return) and uncovered landmark fraction, assignment data
 arch       penalty              gap n=2        unc n=2         gap n=4        unc n=4         gap n=8        unc n=8
@@ -90,8 +90,8 @@ joint      ens:1          -0.22± 0.25    0.00± 0.00    1.32± 0.57    0.11± 0
 joint      ens:5          -0.09± 0.12    0.00± 0.01    1.26± 0.64    0.15± 0.13    7.05± 0.28    0.82± 0.12
 joint      agent_knn:1    -0.32± 0.10    0.00± 0.00    0.46± 0.61    0.02± 0.03   11.05± 1.25    0.51± 0.11
 joint      joint_knn:1    -0.17± 0.20    0.00± 0.00    1.28± 0.70    0.07± 0.07    7.74± 1.04    0.77± 0.16
-attention  none:0         -0.40± 0.06    0.00± 0.00   -0.51± 0.12    0.00± 0.00   14.58±15.91    0.85± 0.54
-attention  ens:1          -0.22± 0.04    0.00± 0.00   -0.22± 0.05    0.00± 0.00    3.54± 3.93    0.27± 0.55
-attention  ens:5          -0.01± 0.12    0.00± 0.00    0.01± 0.03    0.00± 0.00    1.57± 0.86    0.22± 0.33
-attention  agent_knn:1    -0.25± 0.10    0.00± 0.00   -0.36± 0.03    0.00± 0.00    7.39± 6.59    0.30± 0.36
-attention  joint_knn:1    -0.15± 0.14    0.00± 0.00   -0.16± 0.06    0.00± 0.00    5.44± 1.77    0.52± 0.22
+attention  none:0         -0.39± 0.05    0.00± 0.00   -0.51± 0.12    0.00± 0.00   14.58±15.91    0.85± 0.54
+attention  ens:1          -0.21± 0.03    0.00± 0.00   -0.22± 0.05    0.00± 0.00    3.54± 3.93    0.27± 0.55
+attention  ens:5          -0.02± 0.09    0.00± 0.00    0.01± 0.03    0.00± 0.00    1.57± 0.86    0.22± 0.33
+attention  agent_knn:1    -0.26± 0.08    0.00± 0.00   -0.36± 0.03    0.00± 0.00    7.39± 6.59    0.30± 0.36
+attention  joint_knn:1    -0.17± 0.11    0.00± 0.00   -0.16± 0.06    0.00± 0.00    5.44± 1.77    0.52± 0.22
