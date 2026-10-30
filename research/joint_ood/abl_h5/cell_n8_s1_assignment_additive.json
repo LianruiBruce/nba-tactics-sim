@@ -1,0 +1,95 @@
+{
+ "args": {
+  "ns": "8",
+  "seeds": 1,
+  "archs": "additive",
+  "data": "assignment",
+  "configs": "none:0,ens:1,joint_knn:1",
+  "episodes": 4000,
+  "ensemble": 5,
+  "wm_steps": 6000,
+  "iters": 2000,
+  "member": "random",
+  "lr": 0.001,
+  "batch": 256,
+  "pol_hidden": 128,
+  "seed_start": 1,
+  "no_agent_id": false,
+  "horizon": 5,
+  "no_reference": true,
+  "reference_only": false,
+  "out": "research/joint_ood/abl_h5\\cell_n8_s1_assignment_additive.json"
+ },
+ "cells": [
+  {
+   "n": 8,
+   "seed": 1,
+   "data": "assignment",
+   "arch": "additive",
+   "ensemble": 5,
+   "agent_id": true,
+   "episodes": 4000,
+   "wm_time": 92.4275324344635,
+   "behaviour_return": -6.432136058807373,
+   "diag": {
+    "assignment": {
+     "abs_err": 0.030106594786047935,
+     "optimism": -0.01119584683328867,
+     "ens_std": 0.019492754712700844,
+     "std_over_err": 0.6474579572677612
+    },
+    "duplicate": {
+     "abs_err": 0.22579015791416168,
+     "optimism": 0.21967434883117676,
+     "ens_std": 0.01889296993613243,
+     "std_over_err": 0.08367490768432617
+    },
+    "uniform": {
+     "abs_err": 0.23443388938903809,
+     "optimism": 0.2244209200143814,
+     "ens_std": 0.04852740466594696,
+     "std_over_err": 0.20699824392795563
+    }
+   },
+   "policies": [
+    {
+     "true_return": -56.99842834472656,
+     "duplicate_rate": 1.0,
+     "final_coverage": 4.670896530151367,
+     "uncovered_frac": 1.0,
+     "model_return": 26.107852935791016,
+     "exploit_gap": 83.10628128051758,
+     "mean_uncertainty": 4.779988765716553,
+     "penalty": "none",
+     "lam": 0.0,
+     "time": 103.0766384601593
+    },
+    {
+     "true_return": -14.303281784057617,
+     "duplicate_rate": 1.0,
+     "final_coverage": 0.7833283543586731,
+     "uncovered_frac": 0.9707500338554382,
+     "model_return": 7.962616920471191,
+     "exploit_gap": 22.26589870452881,
+     "mean_uncertainty": 1.0410876274108887,
+     "penalty": "ens",
+     "lam": 1.0,
+     "time": 100.59816360473633
+    },
+    {
+     "true_return": -11.741771697998047,
+     "duplicate_rate": 1.0,
+     "final_coverage": 0.5077013969421387,
+     "uncovered_frac": 0.9272500276565552,
+     "model_return": 2.322148084640503,
+     "exploit_gap": 14.06391978263855,
+     "mean_uncertainty": 0.692330539226532,
+     "penalty": "joint_knn",
+     "lam": 1.0,
+     "time": 120.31294560432434
+    }
+   ]
+  }
+ ],
+ "reference": []
+}

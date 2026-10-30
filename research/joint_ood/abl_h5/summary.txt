@@ -1,0 +1,50 @@
+Reference returns (true env). Oracle = same policy class and optimiser trained through the true
+dynamics (the main reference). Scripted best = Hungarian assignment + tuned PD controller, a loose
+upper bound the policy class does not reach.
+  n=2: oracle  -2.836±0.467  scripted best (loose UB)  -2.501±0.335  oracle dup 0.00  oracle cov 0.003  scripted cov 0.000
+  n=4: oracle  -2.760±0.876  scripted best (loose UB)  -1.715±0.150  oracle dup 0.20  oracle cov 0.020  scripted cov 0.000
+  n=8: oracle  -2.906±0.642  scripted best (loose UB)  -1.250±0.120  oracle dup 0.18  oracle cov 0.014  scripted cov 0.000
+
+Reward-model diagnostics on three kinds of state (mean over seeds)
+data         arch        n kind         abs_err  optimism  ens_std  std/err
+assignment   additive    4 assignment     0.012    -0.003    0.013    1.136
+assignment   additive    4 duplicate      0.278     0.277    0.015    0.054
+assignment   additive    4 uniform        0.107     0.062    0.042    0.393
+assignment   additive    8 assignment     0.031    -0.011    0.020    0.648
+assignment   additive    8 duplicate      0.219     0.211    0.020    0.094
+assignment   additive    8 uniform        0.228     0.216    0.047    0.207
+assignment   attention   4 assignment     0.005    -0.001    0.007    1.367
+assignment   attention   4 duplicate      0.156     0.146    0.038    0.246
+assignment   attention   4 uniform        0.048     0.002    0.050    1.034
+assignment   attention   8 assignment     0.018    -0.002    0.023    1.282
+assignment   attention   8 duplicate      0.178     0.165    0.045    0.254
+assignment   attention   8 uniform        0.109     0.033    0.113    1.048
+assignment   joint       4 assignment     0.018    -0.004    0.022    1.258
+assignment   joint       4 duplicate      0.164     0.118    0.047    0.289
+assignment   joint       4 uniform        0.106     0.065    0.097    0.910
+assignment   joint       8 assignment     0.043    -0.018    0.062    1.454
+assignment   joint       8 duplicate      0.201     0.183    0.067    0.335
+assignment   joint       8 uniform        0.160     0.094    0.156    0.975
+
+Policies: true return, regret vs oracle (oracle minus policy true return, paired by n and seed),
+exploit gap (model minus true), duplicate rate (any shared landmark; saturates at large n),
+final coverage, fraction of landmarks uncovered (no agent within 2*RAD; missing in early runs); mean ± 95% CI over seeds
+data         arch        n penalty       lam    true_return  regret_oracle    exploit_gap       dup_rate      final_cov      uncovered seeds
+assignment   additive    4 ens             1 -15.194±4.918  12.740±4.673  12.031±4.340   0.897±0.023   0.268±0.205   0.429±0.471     3
+assignment   additive    4 joint_knn       1 -10.866±2.685   8.412±2.695   7.072±2.710   0.849±0.018   0.183±0.052   0.334±0.228     3
+assignment   additive    4 none            0 -47.963±18.557  45.509±18.725  35.392±15.591   1.000±0.000   3.949±2.450   1.000±0.000     3
+assignment   additive    8 ens             1 -14.477±2.884  11.461±1.416  23.098±9.082   1.000±0.000   0.760±0.285   0.967±0.032     3
+assignment   additive    8 joint_knn       1 -11.866±0.271   8.851±1.629  13.149±5.289   1.000±0.001   0.506±0.012   0.931±0.010     3
+assignment   additive    8 none            0 -59.433±17.689  56.417±18.932  84.660±3.371   1.000±0.000   4.851±1.200   1.000±0.000     3
+assignment   attention   4 ens             1 -10.413±0.528   7.959±0.719   5.032±0.578   0.642±0.091   0.132±0.035   0.216±0.023     3
+assignment   attention   4 joint_knn       1  -9.791±2.972   7.338±3.100   3.500±2.809   0.751±0.023   0.147±0.038   0.256±0.098     3
+assignment   attention   4 none            0 -14.253±1.868  11.799±2.005   8.999±1.903   0.796±0.124   0.152±0.011   0.263±0.056     3
+assignment   attention   8 ens             1 -15.887±9.114  12.872±7.976   9.995±12.310   1.000±0.000   0.272±0.132   0.592±0.027     3
+assignment   attention   8 joint_knn       1 -10.874±0.902   7.859±1.154   3.751±3.741   0.999±0.002   0.291±0.051   0.747±0.010     3
+assignment   attention   8 none            0 -26.604±43.748  23.589±44.634  13.752±18.980   1.000±0.000   1.834±5.582   0.906±0.303     3
+assignment   joint       4 ens             1  -7.419±1.131   4.966±1.323   2.372±0.396   0.537±0.130   0.160±0.018   0.353±0.113     3
+assignment   joint       4 joint_knn       1  -7.724±0.906   5.270±0.983   2.222±0.364   0.591±0.030   0.171±0.029   0.358±0.108     3
+assignment   joint       4 none            0 -38.590±19.093  36.137±19.120  24.959±20.581   0.996±0.015   3.349±2.070   0.999±0.001     3
+assignment   joint       8 ens             1 -10.289±0.767   7.274±0.948   8.042±1.225   0.996±0.009   0.327±0.074   0.848±0.060     3
+assignment   joint       8 joint_knn       1 -10.794±0.544   7.778±1.461   8.020±0.542   0.999±0.003   0.389±0.035   0.893±0.011     3
+assignment   joint       8 none            0 -40.751±18.691  37.735±17.680  36.850±10.882   1.000±0.000   3.729±2.479   1.000±0.002     3

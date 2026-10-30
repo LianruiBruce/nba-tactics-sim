@@ -1,0 +1,42 @@
+{
+ "args": {
+  "ns": "4",
+  "seeds": 1,
+  "archs": "joint,additive,attention",
+  "data": "assignment,independent",
+  "configs": "none:0,ens:1,ens:5,ens_reward:5,agent_knn:1,joint_knn:1",
+  "episodes": 4000,
+  "ensemble": 5,
+  "wm_steps": 6000,
+  "iters": 2000,
+  "member": "random",
+  "lr": 0.001,
+  "batch": 256,
+  "pol_hidden": 128,
+  "seed_start": 0,
+  "no_agent_id": false,
+  "no_reference": false,
+  "reference_only": true,
+  "out": "research/joint_ood/spread_grid\\ref_n4_s0.json"
+ },
+ "cells": [],
+ "reference": [
+  {
+   "n": 4,
+   "seed": 0,
+   "agent_id": true,
+   "oracle": {
+    "true_return": -2.5250515937805176,
+    "duplicate_rate": 0.0,
+    "final_coverage": 0.0021378975361585617,
+    "uncovered_frac": 0.0
+   },
+   "scripted_best": -1.7425580024719238,
+   "scripted_coverage": 2.165040200452495e-07,
+   "scripted_gains": [
+    8.0,
+    1.0
+   ]
+  }
+ ]
+}

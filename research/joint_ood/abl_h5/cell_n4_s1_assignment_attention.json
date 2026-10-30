@@ -1,0 +1,95 @@
+{
+ "args": {
+  "ns": "4",
+  "seeds": 1,
+  "archs": "attention",
+  "data": "assignment",
+  "configs": "none:0,ens:1,joint_knn:1",
+  "episodes": 4000,
+  "ensemble": 5,
+  "wm_steps": 6000,
+  "iters": 2000,
+  "member": "random",
+  "lr": 0.001,
+  "batch": 256,
+  "pol_hidden": 128,
+  "seed_start": 1,
+  "no_agent_id": false,
+  "horizon": 5,
+  "no_reference": true,
+  "reference_only": false,
+  "out": "research/joint_ood/abl_h5\\cell_n4_s1_assignment_attention.json"
+ },
+ "cells": [
+  {
+   "n": 4,
+   "seed": 1,
+   "data": "assignment",
+   "arch": "attention",
+   "ensemble": 5,
+   "agent_id": true,
+   "episodes": 4000,
+   "wm_time": 97.39642834663391,
+   "behaviour_return": -5.592977523803711,
+   "diag": {
+    "assignment": {
+     "abs_err": 0.004939273931086063,
+     "optimism": -0.0008470564498566091,
+     "ens_std": 0.007516063284128904,
+     "std_over_err": 1.5216939449310303
+    },
+    "duplicate": {
+     "abs_err": 0.15319526195526123,
+     "optimism": 0.14439289271831512,
+     "ens_std": 0.03965568169951439,
+     "std_over_err": 0.2588571012020111
+    },
+    "uniform": {
+     "abs_err": 0.04665415361523628,
+     "optimism": 0.007951520383358002,
+     "ens_std": 0.04687417671084404,
+     "std_over_err": 1.0047160387039185
+    }
+   },
+   "policies": [
+    {
+     "true_return": -13.389588356018066,
+     "duplicate_rate": 0.7855000495910645,
+     "final_coverage": 0.14864955842494965,
+     "uncovered_frac": 0.24050001800060272,
+     "model_return": -5.199774742126465,
+     "exploit_gap": 8.189813613891602,
+     "mean_uncertainty": 0.381252646446228,
+     "penalty": "none",
+     "lam": 0.0,
+     "time": 120.05840682983398
+    },
+    {
+     "true_return": -10.178203582763672,
+     "duplicate_rate": 0.6815000176429749,
+     "final_coverage": 0.12805551290512085,
+     "uncovered_frac": 0.20587500929832458,
+     "model_return": -5.332561492919922,
+     "exploit_gap": 4.84564208984375,
+     "mean_uncertainty": 0.21028761565685272,
+     "penalty": "ens",
+     "lam": 1.0,
+     "time": 120.30950856208801
+    },
+    {
+     "true_return": -8.414977073669434,
+     "duplicate_rate": 0.7610000371932983,
+     "final_coverage": 0.15301646292209625,
+     "uncovered_frac": 0.30100002884864807,
+     "model_return": -6.205989837646484,
+     "exploit_gap": 2.208987236022949,
+     "mean_uncertainty": 0.2102004587650299,
+     "penalty": "joint_knn",
+     "lam": 1.0,
+     "time": 79.93643307685852
+    }
+   ]
+  }
+ ],
+ "reference": []
+}
