@@ -483,9 +483,9 @@ def run_reference(args, n, seed):
     env = Spread(n, landmarks, agent_id=not args.no_agent_id)
     data = collect(env, "assignment", min(args.episodes, 2000), gen)
     pol = train_policy(env, None, "none", 0.0, data, gen, args.iters, batch=args.batch, lr=args.lr,
-                       hidden=args.pol_hidden)
+                       hidden=args.pol_hidden, horizon=args.horizon)
     ret, cov, kp, kd = scripted_best(env, gen)
-    return {"n": n, "seed": seed, "agent_id": not args.no_agent_id,
+    return {"n": n, "seed": seed, "agent_id": not args.no_agent_id, "horizon": args.horizon,
             "oracle": evaluate(env, pol, None, gen), "scripted_best": ret,
             "scripted_coverage": cov, "scripted_gains": [kp, kd]}
 
