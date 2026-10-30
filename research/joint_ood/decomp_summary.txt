@@ -1,0 +1,131 @@
+117 cells; world model reproduced in 117
+
+Exploit gap = one-step model error on the true trajectory + compounding. Mean ± 95% CI over seeds.
+crowded share = part of one_step on steps whose true next state is crowded.
+data         H arch        n config       seeds              gap         one_step      compounding one_step_crowded     crowded_frac
+assignment   5 additive    4 ens:1            3      12.17± 4.16      12.17± 4.14       0.00± 0.01      12.11± 4.14       0.91± 0.04
+assignment   5 additive    4 joint_knn:1      3       7.27± 2.72       7.27± 2.72       0.00± 0.01       7.21± 2.93       0.88± 0.02
+assignment   5 additive    4 none:0           3      35.35±16.03      36.12±17.00      -0.77± 1.58      36.07±17.08       0.99± 0.01
+assignment   5 additive    8 ens:1            3      23.24± 9.04      22.93± 8.94       0.31± 0.60      22.92± 8.92       1.00± 0.00
+assignment   5 additive    8 joint_knn:1      3      13.40± 5.53      13.34± 5.53       0.07± 0.15      13.33± 5.52       1.00± 0.00
+assignment   5 additive    8 none:0           3      84.84± 3.38      84.88± 4.18      -0.04± 1.33      84.87± 4.18       1.00± 0.00
+assignment   5 attention   4 ens:1            3       5.20± 0.44       5.20± 0.45       0.00± 0.02       5.24± 0.49       0.72± 0.08
+assignment   5 attention   4 joint_knn:1      3       3.64± 3.03       3.64± 3.04       0.00± 0.01       3.64± 3.05       0.81± 0.02
+assignment   5 attention   4 none:0           3       9.23± 2.00       9.23± 2.02       0.00± 0.02       9.32± 2.00       0.82± 0.09
+assignment   5 attention   8 ens:1            3      10.24±12.09      10.24±12.10      -0.00± 0.02      10.24±12.10       1.00± 0.00
+assignment   5 attention   8 joint_knn:1      3       3.95± 3.73       3.97± 3.70      -0.02± 0.05       3.97± 3.70       1.00± 0.00
+assignment   5 attention   8 none:0           3      13.94±19.04      13.46±16.99       0.49± 2.06      13.45±16.99       1.00± 0.00
+assignment   5 joint       4 ens:1            3       2.46± 0.47       2.47± 0.47      -0.00± 0.00       2.09± 0.60       0.69± 0.07
+assignment   5 joint       4 joint_knn:1      3       2.37± 0.30       2.36± 0.31       0.01± 0.05       2.00± 0.10       0.74± 0.03
+assignment   5 joint       4 none:0           3      24.76±21.71      24.00±22.60       0.77± 1.17      23.02±22.23       0.93± 0.07
+assignment   5 joint       8 ens:1            3       8.24± 1.27       8.18± 1.37       0.05± 0.11       8.16± 1.31       1.00± 0.01
+assignment   5 joint       8 joint_knn:1      3       8.19± 0.30       7.84± 0.51       0.35± 0.29       7.83± 0.52       1.00± 0.00
+assignment   5 joint       8 none:0           3      36.95±10.90      31.78±10.70       5.17± 0.36      31.78±10.70       1.00± 0.00
+assignment  10 additive    4 ens:1            3      15.92± 3.17      15.91± 3.17       0.01± 0.02      15.94± 3.11       0.95± 0.12
+assignment  10 additive    4 joint_knn:1      3       8.96± 3.47       8.96± 3.47      -0.00± 0.01       8.96± 3.64       0.85± 0.01
+assignment  10 additive    4 none:0           3      34.54±21.66      35.40±21.08      -0.86± 0.66      35.38±21.11       0.99± 0.02
+assignment  10 additive    8 ens:1            3      33.02±68.95      32.68±67.43       0.35± 1.51      32.68±67.44       1.00± 0.00
+assignment  10 additive    8 joint_knn:1      3      12.83± 2.06      12.83± 2.07       0.01± 0.01      12.82± 2.05       1.00± 0.00
+assignment  10 additive    8 none:0           3      88.82±27.24      88.29±23.39       0.53± 4.30      88.28±23.39       1.00± 0.00
+assignment  10 attention   4 ens:1            3       4.47± 1.78       4.46± 1.80       0.01± 0.02       4.51± 1.84       0.71± 0.01
+assignment  10 attention   4 joint_knn:1      3       4.27± 3.61       4.26± 3.61       0.01± 0.00       4.30± 3.61       0.75± 0.10
+assignment  10 attention   4 none:0           3       7.32± 7.47       7.32± 7.47      -0.00± 0.01       7.44± 7.33       0.72± 0.32
+assignment  10 attention   8 ens:1            3      13.46±14.84      13.47±14.83      -0.00± 0.01      13.46±14.84       1.00± 0.00
+assignment  10 attention   8 joint_knn:1      3       5.79± 3.93       5.80± 3.92      -0.01± 0.02       5.79± 3.91       1.00± 0.00
+assignment  10 attention   8 none:0           3      11.37±20.14      11.68±18.95      -0.31± 1.36      11.68±18.95       1.00± 0.00
+assignment  10 joint       4 ens:1            3       2.64± 1.46       2.65± 1.46      -0.01± 0.00       2.28± 1.85       0.62± 0.14
+assignment  10 joint       4 joint_knn:1      3       2.47± 0.69       2.48± 0.69      -0.01± 0.01       2.03± 1.03       0.62± 0.20
+assignment  10 joint       4 none:0           3      18.07±34.71      17.93±34.43       0.14± 0.33       9.88±23.25       0.57± 0.35
+assignment  10 joint       8 ens:1            3       8.16± 1.54       8.16± 1.58      -0.00± 0.05       8.12± 1.52       0.99± 0.01
+assignment  10 joint       8 joint_knn:1      3       8.62± 1.03       8.58± 1.13       0.04± 0.12       8.55± 1.08       1.00± 0.01
+assignment  10 joint       8 none:0           3      35.66±23.00      34.00±16.89       1.66± 7.33      34.00±16.89       1.00± 0.00
+assignment  25 additive    2 agent_knn:1      5      16.27± 4.48      16.27± 4.47      -0.00± 0.01      16.45± 4.50       0.88± 0.03
+assignment  25 additive    2 ens:1            5      16.61± 4.87      16.61± 4.86      -0.00± 0.01      16.78± 4.90       0.88± 0.03
+assignment  25 additive    2 ens:5            5       8.75± 8.99       8.75± 8.99      -0.00± 0.01       8.93± 9.04       0.59± 0.45
+assignment  25 additive    2 joint_knn:1      5       0.16± 1.09       0.16± 1.10      -0.00± 0.01       0.56± 1.01       0.16± 0.14
+assignment  25 additive    2 none:0           5      17.79± 4.95      17.79± 4.95      -0.00± 0.01      17.96± 4.96       0.88± 0.02
+assignment  25 additive    4 agent_knn:1      5      42.45± 6.64      42.45± 6.64      -0.00± 0.01      42.48± 6.64       0.98± 0.00
+assignment  25 additive    4 ens:1            5      30.35±14.20      30.35±14.20      -0.00± 0.01      30.38±14.20       0.98± 0.02
+assignment  25 additive    4 ens:5            5      14.05± 7.17      14.05± 7.17       0.00± 0.00      14.07± 7.18       0.98± 0.01
+assignment  25 additive    4 joint_knn:1      5       5.95± 3.72       5.95± 3.72      -0.00± 0.01       5.91± 3.80       0.77± 0.20
+assignment  25 additive    4 none:0           5      51.87± 6.69      51.88± 6.66      -0.01± 0.03      51.89± 6.66       0.98± 0.00
+assignment  25 additive    8 agent_knn:1      3      75.68±77.87      75.77±78.00      -0.08± 0.19      75.77±78.00       1.00± 0.00
+assignment  25 additive    8 ens:1            3      56.09±28.42      56.09±28.47      -0.00± 0.21      56.09±28.47       1.00± 0.00
+assignment  25 additive    8 ens:5            3      23.38±12.59      23.38±12.59      -0.00± 0.01      23.38±12.59       1.00± 0.00
+assignment  25 additive    8 joint_knn:1      3      15.43± 4.99      15.43± 5.00      -0.00± 0.02      15.43± 5.00       1.00± 0.00
+assignment  25 additive    8 none:0           3     107.14±21.52     105.34±22.42       1.81± 0.90     105.34±22.42       1.00± 0.00
+assignment  25 attention   2 agent_knn:1      5      -0.26± 0.08      -0.26± 0.08      -0.01± 0.01       0.01± 0.00       0.11± 0.04
+assignment  25 attention   2 ens:1            5      -0.21± 0.03      -0.21± 0.03      -0.01± 0.01       0.01± 0.00       0.12± 0.05
+assignment  25 attention   2 ens:5            5      -0.03± 0.09      -0.02± 0.09      -0.00± 0.01       0.01± 0.00       0.14± 0.05
+assignment  25 attention   2 joint_knn:1      5      -0.17± 0.11      -0.17± 0.11      -0.00± 0.01       0.00± 0.00       0.12± 0.06
+assignment  25 attention   2 none:0           5      -0.39± 0.05      -0.38± 0.05      -0.01± 0.00       0.00± 0.02       0.10± 0.05
+assignment  25 attention   4 agent_knn:1      5      -0.35± 0.03      -0.34± 0.03      -0.01± 0.01      -0.02± 0.03       0.26± 0.02
+assignment  25 attention   4 ens:1            5      -0.21± 0.05      -0.20± 0.05      -0.01± 0.01       0.01± 0.02       0.29± 0.03
+assignment  25 attention   4 ens:5            5       0.01± 0.02       0.01± 0.02      -0.00± 0.01       0.03± 0.01       0.34± 0.03
+assignment  25 attention   4 joint_knn:1      5      -0.16± 0.05      -0.15± 0.05      -0.00± 0.00       0.01± 0.02       0.30± 0.03
+assignment  25 attention   4 none:0           5      -0.50± 0.12      -0.48± 0.12      -0.02± 0.00      -0.07± 0.04       0.24± 0.02
+assignment  25 attention   8 agent_knn:1      3       9.75±15.72       9.76±15.70      -0.01± 0.01       9.76±15.70       0.99± 0.03
+assignment  25 attention   8 ens:1            3       4.80± 9.87       4.81± 9.86      -0.01± 0.02       4.70±10.28       0.81± 0.80
+assignment  25 attention   8 ens:5            3       1.15± 1.08       1.16± 1.09      -0.01± 0.01       0.99± 1.16       0.74± 0.35
+assignment  25 attention   8 joint_knn:1      3       6.33± 2.86       6.34± 2.85      -0.00± 0.01       6.32± 2.86       0.99± 0.02
+assignment  25 attention   8 none:0           3      21.62±31.34      21.54±30.87       0.08± 0.69      21.54±30.87       1.00± 0.00
+assignment  25 joint       2 agent_knn:1      5      -0.33± 0.09      -0.32± 0.10      -0.01± 0.00      -0.01± 0.01       0.11± 0.04
+assignment  25 joint       2 ens:1            5      -0.22± 0.25      -0.21± 0.25      -0.01± 0.01      -0.01± 0.01       0.12± 0.05
+assignment  25 joint       2 ens:5            5      -0.09± 0.12      -0.09± 0.11      -0.00± 0.00      -0.00± 0.01       0.14± 0.07
+assignment  25 joint       2 joint_knn:1      5      -0.17± 0.20      -0.16± 0.20      -0.00± 0.01      -0.00± 0.01       0.12± 0.05
+assignment  25 joint       2 none:0           5      -0.37± 0.34      -0.36± 0.35      -0.01± 0.01      -0.02± 0.02       0.11± 0.04
+assignment  25 joint       4 agent_knn:1      5       0.46± 0.58       0.48± 0.58      -0.01± 0.01       0.27± 0.44       0.29± 0.04
+assignment  25 joint       4 ens:1            5       1.37± 0.56       1.37± 0.55      -0.01± 0.01       0.77± 0.47       0.39± 0.07
+assignment  25 joint       4 ens:5            5       1.30± 0.67       1.32± 0.66      -0.02± 0.01       0.82± 0.47       0.45± 0.09
+assignment  25 joint       4 joint_knn:1      5       1.26± 0.69       1.27± 0.68      -0.01± 0.01       0.73± 0.58       0.38± 0.06
+assignment  25 joint       4 none:0           5      30.46± 9.49      30.33± 9.32       0.13± 0.20      25.66±17.91       0.82± 0.34
+assignment  25 joint       8 agent_knn:1      3      11.54± 2.96      11.57± 2.99      -0.03± 0.03      11.56± 2.98       1.00± 0.00
+assignment  25 joint       8 ens:1            3       7.95± 1.74       7.97± 1.74      -0.02± 0.01       7.92± 1.71       0.99± 0.01
+assignment  25 joint       8 ens:5            3       7.40± 0.66       7.41± 0.66      -0.00± 0.01       7.39± 0.67       1.00± 0.00
+assignment  25 joint       8 joint_knn:1      3       8.30± 2.54       8.32± 2.55      -0.03± 0.01       8.28± 2.53       0.99± 0.00
+assignment  25 joint       8 none:0           3      45.86± 8.23      45.56± 9.21       0.30± 2.20      45.55± 9.21       1.00± 0.00
+independent 25 additive    2 agent_knn:1      5       6.15± 5.40       6.15± 5.41      -0.00± 0.01       6.21± 5.57       0.61± 0.40
+independent 25 additive    2 ens:1            5       4.62± 4.95       4.62± 4.94       0.00± 0.01       4.42± 5.49       0.51± 0.25
+independent 25 additive    2 ens:5            5       3.32± 4.09       3.32± 4.09       0.00± 0.01       3.56± 3.98       0.69± 0.25
+independent 25 additive    2 joint_knn:1      5       6.38± 3.24       6.38± 3.25      -0.00± 0.02       6.54± 3.23       0.84± 0.06
+independent 25 additive    2 none:0           5      32.73±26.87      32.56±26.49       0.17± 0.42      32.65±26.50       0.88± 0.02
+independent 25 additive    4 agent_knn:1      5      27.81±11.05      27.79±11.03       0.02± 0.04      27.47±11.20       0.98± 0.04
+independent 25 additive    4 ens:1            5      15.31± 2.97      15.31± 2.97      -0.01± 0.02      14.22± 5.23       0.92± 0.17
+independent 25 additive    4 ens:5            5       7.77± 3.67       7.78± 3.67      -0.01± 0.02       7.59± 3.53       0.97± 0.04
+independent 25 additive    4 joint_knn:1      5      21.68± 8.78      21.67± 8.77       0.00± 0.01      21.41± 9.33       0.97± 0.06
+independent 25 additive    4 none:0           5      77.61±20.32      77.47±21.19       0.15± 1.47      77.37±21.19       0.99± 0.01
+independent 25 additive    8 agent_knn:1      4      44.00±27.11      44.06±27.11      -0.06± 0.14      44.06±27.11       1.00± 0.00
+independent 25 additive    8 ens:1            4      35.33± 9.05      35.40± 9.19      -0.07± 0.14      35.40± 9.19       1.00± 0.00
+independent 25 additive    8 ens:5            4      16.44±13.82      16.44±13.81       0.00± 0.01      16.44±13.81       1.00± 0.00
+independent 25 additive    8 joint_knn:1      4      19.00± 6.62      19.01± 6.62      -0.01± 0.06      19.01± 6.62       1.00± 0.00
+independent 25 additive    8 none:0           4      74.14±47.68      72.61±45.67       1.53± 2.23      72.61±45.67       1.00± 0.00
+independent 25 attention   2 agent_knn:1      5      -0.28± 0.19      -0.27± 0.19      -0.01± 0.00      -0.01± 0.01       0.12± 0.04
+independent 25 attention   2 ens:1            5      -0.28± 0.12      -0.28± 0.12      -0.00± 0.00      -0.00± 0.01       0.12± 0.04
+independent 25 attention   2 ens:5            5      -0.15± 0.09      -0.15± 0.09       0.00± 0.00      -0.00± 0.01       0.14± 0.06
+independent 25 attention   2 joint_knn:1      5      -0.26± 0.15      -0.26± 0.15      -0.00± 0.00      -0.00± 0.01       0.13± 0.05
+independent 25 attention   2 none:0           5      -0.47± 0.17      -0.45± 0.18      -0.01± 0.00      -0.01± 0.00       0.11± 0.04
+independent 25 attention   4 agent_knn:1      5      -0.23± 0.16      -0.21± 0.17      -0.01± 0.00      -0.03± 0.02       0.26± 0.02
+independent 25 attention   4 ens:1            5      -0.07± 0.19      -0.06± 0.19      -0.01± 0.00      -0.01± 0.02       0.28± 0.03
+independent 25 attention   4 ens:5            5      -0.01± 0.19      -0.01± 0.19       0.00± 0.00       0.00± 0.09       0.48± 0.25
+independent 25 attention   4 joint_knn:1      5      -0.02± 0.06      -0.02± 0.07      -0.00± 0.00       0.04± 0.02       0.40± 0.11
+independent 25 attention   4 none:0           5      -0.34± 0.27      -0.33± 0.27      -0.02± 0.00      -0.08± 0.01       0.24± 0.02
+independent 25 attention   8 agent_knn:1      4       2.95± 0.33       2.97± 0.33      -0.02± 0.01       2.12± 2.27       0.82± 0.51
+independent 25 attention   8 ens:1            4       2.37± 0.22       2.38± 0.22      -0.01± 0.01       1.23± 1.92       0.68± 0.48
+independent 25 attention   8 ens:5            4       1.46± 1.07       1.47± 1.07      -0.01± 0.00       1.28± 1.48       0.87± 0.41
+independent 25 attention   8 joint_knn:1      4       1.40± 0.53       1.40± 0.53      -0.01± 0.01       1.32± 0.48       0.96± 0.03
+independent 25 attention   8 none:0           4       3.28± 0.90       3.30± 0.91      -0.02± 0.01       1.72± 3.09       0.65± 0.61
+independent 25 joint       2 agent_knn:1      5      -0.11± 0.81      -0.10± 0.81      -0.00± 0.00      -0.01± 0.00       0.12± 0.04
+independent 25 joint       2 ens:1            5      -0.15± 0.43      -0.15± 0.43      -0.00± 0.00      -0.01± 0.00       0.12± 0.04
+independent 25 joint       2 ens:5            5      -0.03± 0.14      -0.03± 0.13      -0.00± 0.01      -0.00± 0.01       0.15± 0.07
+independent 25 joint       2 joint_knn:1      5      -0.05± 0.64      -0.05± 0.64      -0.00± 0.00      -0.01± 0.01       0.13± 0.05
+independent 25 joint       2 none:0           5      -0.16± 1.06      -0.15± 1.06      -0.01± 0.00      -0.03± 0.01       0.11± 0.03
+independent 25 joint       4 agent_knn:1      5      15.05± 6.05      15.23± 6.08      -0.18± 0.07      15.25± 6.07       0.98± 0.01
+independent 25 joint       4 ens:1            5       4.24± 2.84       4.32± 2.90      -0.08± 0.07       2.09± 3.06       0.58± 0.34
+independent 25 joint       4 ens:5            5       1.08± 0.44       1.10± 0.47      -0.02± 0.03       0.12± 0.16       0.42± 0.07
+independent 25 joint       4 joint_knn:1      5      14.47± 8.60      14.60± 8.64      -0.13± 0.07      13.39±11.16       0.85± 0.36
+independent 25 joint       4 none:0           5      44.12±26.99      44.12±26.77      -0.00± 0.39      38.90±20.11       0.88± 0.12
+independent 25 joint       8 agent_knn:1      4      19.19± 4.37      19.78± 4.02      -0.59± 0.47      19.78± 4.02       1.00± 0.00
+independent 25 joint       8 ens:1            4      19.98±12.06      20.47±12.18      -0.50± 0.13      20.47±12.18       1.00± 0.00
+independent 25 joint       8 ens:5            4      14.20± 3.94      14.63± 4.32      -0.43± 0.66      14.63± 4.32       1.00± 0.00
+independent 25 joint       8 joint_knn:1      4      14.91± 1.65      15.33± 1.84      -0.43± 0.30      15.33± 1.84       1.00± 0.00
+independent 25 joint       8 none:0           4      70.20±15.31      72.05±16.57      -1.85± 1.82      72.05±16.58       1.00± 0.00
