@@ -1,0 +1,37 @@
+Oracle true return by n: {2: np.float64(-2.836), 4: np.float64(-2.76), 8: np.float64(-2.906)}
+
+1. Reward-model optimism on crowded (duplicate) states and ensemble std/err, assignment data
+arch         n=2: optimism  std/err   n=4: optimism  std/err   n=8: optimism  std/err
+additive       0.60± 0.28   0.02     0.27± 0.03   0.05     0.21± 0.02   0.09
+joint          0.09± 0.07   0.64     0.12± 0.01   0.30     0.19± 0.01   0.31
+attention      0.22± 0.11   0.21     0.14± 0.03   0.29     0.17± 0.02   0.24
+   same, independent data (crowding present in the data):
+additive       0.31± 0.14   0.07    -0.12± 0.01   0.21    -0.51± 0.03   0.10
+joint          0.00± 0.00   0.78    -0.00± 0.01   0.84    -0.36± 0.03   0.72
+attention     -0.00± 0.01   1.20     0.00± 0.01   1.41    -0.01± 0.01   1.01
+
+2. Regret vs oracle, assignment data (mean ± 95% CI over seeds)
+arch       penalty                  n=2             n=4             n=8
+additive   pair_knn:1      1.12± 0.54   34.29±12.92   35.85± 4.34
+joint      pair_knn:1      1.08± 0.57    1.99± 1.23    8.44± 0.50
+attention  pair_knn:1      0.84± 0.41    0.60± 0.90   12.13± 5.02
+
+2. Regret vs oracle, independent data (mean ± 95% CI over seeds)
+arch       penalty                  n=2             n=4             n=8
+additive   pair_knn:1     12.09± 4.82   20.69± 7.46   28.55±16.23
+joint      pair_knn:1      1.28± 0.94    8.83± 3.68    7.73± 3.99
+attention  pair_knn:1      1.07± 0.62    0.75± 0.90    2.39± 0.46
+
+3. Causal control: regret(assignment) - regret(independent), paired by seed. Positive = the
+   crowding-free data makes things worse, as expected if the failure is joint-action OOD
+additive   pair_knn:1    n=2:  -10.97 (n=5, p=0.002)  n=4:   13.60 (n=5, p=0.037)  n=8:    7.31 (n=5, p=0.361)
+joint      pair_knn:1    n=2:   -0.20 (n=5, p=0.234)  n=4:   -6.84 (n=5, p=0.011)  n=8:    0.71 (n=5, p=0.668)
+attention  pair_knn:1    n=2:   -0.23 (n=5, p=0.191)  n=4:   -0.15 (n=5, p=0.003)  n=8:    9.73 (n=5, p=0.006)
+
+4. Penalty effect: regret(none) - regret(penalty), assignment data, paired by seed. Positive = penalty helps
+
+5. Exploit gap (model return - true return) and uncovered landmark fraction, assignment data
+arch       penalty              gap n=2        unc n=2         gap n=4        unc n=4         gap n=8        unc n=8
+additive   pair_knn:1     -0.24± 0.16    0.00± 0.00   35.02±13.12    0.68± 0.13   42.55± 5.71    0.86± 0.14
+joint      pair_knn:1     -0.20± 0.15    0.00± 0.00    1.35± 0.85    0.08± 0.07   10.04± 1.59    0.70± 0.04
+attention  pair_knn:1     -0.20± 0.05    0.00± 0.00   -0.24± 0.06    0.00± 0.00   11.39± 6.00    0.46± 0.21

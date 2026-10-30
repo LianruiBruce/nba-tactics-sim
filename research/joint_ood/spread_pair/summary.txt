@@ -1,0 +1,86 @@
+Reference returns (true env). Oracle = same policy class and optimiser trained through the true
+dynamics (the main reference). Scripted best = Hungarian assignment + tuned PD controller, a loose
+upper bound the policy class does not reach.
+  n=2: oracle  -2.836±0.467  scripted best (loose UB)  -2.501±0.335  oracle dup 0.00  oracle cov 0.003  scripted cov 0.000
+  n=4: oracle  -2.760±0.876  scripted best (loose UB)  -1.715±0.150  oracle dup 0.20  oracle cov 0.020  scripted cov 0.000
+  n=8: oracle  -2.906±0.642  scripted best (loose UB)  -1.250±0.120  oracle dup 0.18  oracle cov 0.014  scripted cov 0.000
+
+Reward-model diagnostics on three kinds of state (mean over seeds)
+data         arch        n kind         abs_err  optimism  ens_std  std/err
+assignment   additive    2 assignment     0.008    -0.001    0.008    0.920
+assignment   additive    2 duplicate      0.597     0.597    0.014    0.024
+assignment   additive    2 uniform        0.113     0.048    0.044    0.400
+assignment   additive    4 assignment     0.014    -0.005    0.013    0.956
+assignment   additive    4 duplicate      0.274     0.273    0.015    0.055
+assignment   additive    4 uniform        0.107     0.050    0.044    0.406
+assignment   additive    8 assignment     0.029    -0.013    0.020    0.670
+assignment   additive    8 duplicate      0.218     0.212    0.020    0.092
+assignment   additive    8 uniform        0.224     0.214    0.047    0.210
+assignment   attention   2 assignment     0.004     0.000    0.004    1.098
+assignment   attention   2 duplicate      0.221     0.219    0.036    0.212
+assignment   attention   2 uniform        0.028     0.010    0.038    1.396
+assignment   attention   4 assignment     0.006    -0.001    0.007    1.310
+assignment   attention   4 duplicate      0.147     0.137    0.042    0.293
+assignment   attention   4 uniform        0.047    -0.001    0.050    1.076
+assignment   attention   8 assignment     0.016    -0.002    0.021    1.337
+assignment   attention   8 duplicate      0.180     0.169    0.042    0.235
+assignment   attention   8 uniform        0.107     0.035    0.112    1.054
+assignment   joint       2 assignment     0.005    -0.000    0.004    0.824
+assignment   joint       2 duplicate      0.103     0.090    0.054    0.642
+assignment   joint       2 uniform        0.031     0.002    0.036    1.180
+assignment   joint       4 assignment     0.020    -0.004    0.024    1.251
+assignment   joint       4 duplicate      0.164     0.123    0.050    0.303
+assignment   joint       4 uniform        0.107     0.060    0.102    0.950
+assignment   joint       8 assignment     0.040    -0.016    0.058    1.484
+assignment   joint       8 duplicate      0.203     0.188    0.063    0.312
+assignment   joint       8 uniform        0.158     0.096    0.152    0.961
+independent  additive    2 assignment     0.288    -0.288    0.021    0.077
+independent  additive    2 duplicate      0.312     0.311    0.023    0.074
+independent  additive    2 uniform        0.139     0.073    0.059    0.422
+independent  additive    4 assignment     0.397    -0.397    0.032    0.081
+independent  additive    4 duplicate      0.158    -0.118    0.033    0.211
+independent  additive    4 uniform        0.171     0.142    0.070    0.406
+independent  additive    8 assignment     0.739    -0.739    0.050    0.067
+independent  additive    8 duplicate      0.515    -0.514    0.051    0.099
+independent  additive    8 uniform        0.158     0.042    0.082    0.518
+independent  attention   2 assignment     0.005    -0.000    0.004    0.800
+independent  attention   2 duplicate      0.012    -0.000    0.014    1.203
+independent  attention   2 uniform        0.021    -0.001    0.035    1.728
+independent  attention   4 assignment     0.009    -0.002    0.015    1.580
+independent  attention   4 duplicate      0.018     0.001    0.026    1.414
+independent  attention   4 uniform        0.048    -0.010    0.056    1.174
+independent  attention   8 assignment     0.034    -0.021    0.045    1.335
+independent  attention   8 duplicate      0.061    -0.007    0.062    1.010
+independent  attention   8 uniform        0.095    -0.015    0.086    0.910
+independent  joint       2 assignment     0.007     0.000    0.006    0.832
+independent  joint       2 duplicate      0.012     0.001    0.009    0.783
+independent  joint       2 uniform        0.027     0.002    0.031    1.183
+independent  joint       4 assignment     0.060    -0.044    0.082    1.368
+independent  joint       4 duplicate      0.122    -0.002    0.103    0.845
+independent  joint       4 uniform        0.125     0.076    0.152    1.216
+independent  joint       8 assignment     0.521    -0.520    0.260    0.500
+independent  joint       8 duplicate      0.378    -0.362    0.270    0.716
+independent  joint       8 uniform        0.188    -0.075    0.272    1.441
+
+Policies: true return, regret vs oracle (oracle minus policy true return, paired by n and seed),
+exploit gap (model minus true), duplicate rate (any shared landmark; saturates at large n),
+final coverage, fraction of landmarks uncovered (no agent within 2*RAD; missing in early runs); mean ± 95% CI over seeds
+data         arch        n penalty       lam    true_return  regret_oracle    exploit_gap       dup_rate      final_cov      uncovered seeds
+assignment   additive    2 pair_knn        1  -3.953±0.819   1.117±0.538  -0.243±0.161   0.000±0.000   0.010±0.006   0.000±0.000     5
+assignment   additive    4 pair_knn        1 -37.053±12.472  34.293±12.920  35.020±13.118   1.000±0.000   0.488±0.158   0.685±0.129     5
+assignment   additive    8 pair_knn        1 -38.760±4.426  35.854±4.337  42.552±5.710   1.000±0.000   0.592±0.222   0.862±0.141     5
+assignment   attention   2 pair_knn        1  -3.673±0.562   0.837±0.414  -0.203±0.053   0.000±0.000   0.006±0.005   0.000±0.000     5
+assignment   attention   4 pair_knn        1  -3.363±0.162   0.603±0.904  -0.238±0.058   0.000±0.000   0.012±0.005   0.000±0.000     5
+assignment   attention   8 pair_knn        1 -15.031±5.502  12.126±5.017  11.391±5.997   1.000±0.000   0.219±0.101   0.457±0.213     5
+assignment   joint       2 pair_knn        1  -3.915±0.867   1.079±0.575  -0.201±0.154   0.000±0.000   0.012±0.015   0.000±0.001     5
+assignment   joint       4 pair_knn        1  -4.751±0.652   1.991±1.227   1.346±0.845   0.160±0.184   0.075±0.023   0.080±0.069     5
+assignment   joint       8 pair_knn        1 -11.345±1.015   8.440±0.500  10.035±1.591   0.999±0.001   0.297±0.063   0.701±0.040     5
+independent  additive    2 pair_knn        1 -14.927±5.220  12.091±4.817   6.191±2.867   0.974±0.073   0.545±0.294   0.757±0.311     5
+independent  additive    4 pair_knn        1 -23.450±6.650  20.690±7.462  23.560±7.294   1.000±0.000   0.550±0.163   0.995±0.013     5
+independent  additive    8 pair_knn        1 -31.452±16.170  28.546±16.226  35.083±14.225   1.000±0.000   0.833±0.127   0.920±0.073     5
+independent  attention   2 pair_knn        1  -3.902±0.932   1.065±0.616  -0.246±0.131   0.000±0.000   0.010±0.015   0.000±0.000     5
+independent  attention   4 pair_knn        1  -3.510±0.147   0.750±0.902  -0.140±0.164   0.001±0.001   0.024±0.009   0.001±0.002     5
+independent  attention   8 pair_knn        1  -5.300±0.426   2.395±0.458   2.292±0.622   0.698±0.295   0.125±0.019   0.301±0.102     5
+independent  joint       2 pair_knn        1  -4.118±1.263   1.282±0.944  -0.053±0.569   0.000±0.000   0.027±0.042   0.000±0.001     5
+independent  joint       4 pair_knn        1 -11.591±3.637   8.831±3.684  17.720±7.643   1.000±0.000   0.425±0.104   0.869±0.156     5
+independent  joint       8 pair_knn        1 -10.634±3.631   7.729±3.991  17.866±4.091   0.823±0.491   0.351±0.098   0.865±0.092     5

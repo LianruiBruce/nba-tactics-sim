@@ -1,0 +1,71 @@
+{
+ "args": {
+  "ns": "4",
+  "seeds": 1,
+  "archs": "additive",
+  "data": "independent",
+  "configs": "pair_knn:1",
+  "episodes": 4000,
+  "ensemble": 5,
+  "wm_steps": 6000,
+  "iters": 2000,
+  "member": "random",
+  "lr": 0.001,
+  "batch": 256,
+  "pol_hidden": 128,
+  "seed_start": 1,
+  "no_agent_id": false,
+  "horizon": 25,
+  "no_reference": true,
+  "reference_only": false,
+  "out": "research/joint_ood/spread_pair\\cell_n4_s1_independent_additive.json"
+ },
+ "cells": [
+  {
+   "n": 4,
+   "seed": 1,
+   "data": "independent",
+   "arch": "additive",
+   "ensemble": 5,
+   "agent_id": true,
+   "episodes": 4000,
+   "wm_time": 50.43181777000427,
+   "behaviour_return": -11.015875816345215,
+   "diag": {
+    "assignment": {
+     "abs_err": 0.4014289081096649,
+     "optimism": -0.401292085647583,
+     "ens_std": 0.0321793369948864,
+     "std_over_err": 0.08016198128461838
+    },
+    "duplicate": {
+     "abs_err": 0.15425284206867218,
+     "optimism": -0.11806879192590714,
+     "ens_std": 0.031771015375852585,
+     "std_over_err": 0.20596712827682495
+    },
+    "uniform": {
+     "abs_err": 0.17361988127231598,
+     "optimism": 0.14483080804347992,
+     "ens_std": 0.07097012549638748,
+     "std_over_err": 0.4087672829627991
+    }
+   },
+   "policies": [
+    {
+     "true_return": -26.339662551879883,
+     "duplicate_rate": 1.0,
+     "final_coverage": 0.6899621486663818,
+     "uncovered_frac": 1.0,
+     "model_return": -0.1973293274641037,
+     "exploit_gap": 26.14233322441578,
+     "mean_uncertainty": 0.5767540335655212,
+     "penalty": "pair_knn",
+     "lam": 1.0,
+     "time": 1179.1825313568115
+    }
+   ]
+  }
+ ],
+ "reference": []
+}
