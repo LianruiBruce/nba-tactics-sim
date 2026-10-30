@@ -67,6 +67,7 @@ N 个智能体、N 个地标，25 步，带碰撞惩罚。流程是：集成世�
 | additive | none | 17.7 | 49.7 | 57.8 |
 | additive | ens:1 | 16.9 | 29.6 | 34.4 |
 | additive | joint_knn | 1.5 | 6.0 | 12.9 |
+| additive | pair_knn | 1.1 | 34.3 | 35.9 |
 | joint | none | 0.3 | 27.2 | 28.0 |
 | joint | ens:1 | 0.9 | 2.5 | 7.3 |
 | joint | joint_knn | 1.1 | 2.1 | 6.7 |
@@ -90,20 +91,22 @@ exploit gap = 沿真实轨迹的单步模型误差 + 累积误差（compounding�
 
 ## 3. 结果与研究方向是否匹配
 
+假设编号按阶段 3 文档：H1 模型乐观且集成看不出，H2 偏差来自缺少联合覆盖，H3 利用随 n 增加，H4 逐智能体惩罚挡不住、联合支撑能挡但保守，H5 真实数据集。
+
 **匹配得好的部分：**
 1. H1（模型在 joint-OOD 上乐观、集成低估误差）：两个 pilot 都清楚支持，数字一致。
-2. H4（n 越大越严重）：所有架构在 n=8 时都出问题，n≤4 时 joint/attention 基本正常。
+2. H3（n 越大越严重）：所有架构在 n=8 时都出问题，n≤4 时 joint/attention 基本正常。
 3. 机制：分解结果表明，利用来自对拥挤联合状态的单步乐观，和"joint-action OOD"这个故事完全一致。
 4. Pilot 1 中联合支撑约束完全解决问题。
 
 **不完全匹配、需要你判断的部分：**
-1. **H2 在 spread 里不成立得那么干净。** joint_knn 并没有明显优于 ens。joint n=8 时 ens:1 是 7.3，joint_knn 是 6.7，差不多；attention n=8 时 joint_knn（7.0）反而比 ens（4.8）差。在多步任务里，联合支撑约束没能像 pilot 1 那样解决问题，n=8 时所有惩罚都还剩 5–10 的 regret。
+1. **H4（联合支撑能挡）在 spread 里只对 additive 干净成立。** joint_knn 并没有明显优于 ens。joint n=8 时 ens:1 是 7.3，joint_knn 是 6.7，差不多；attention n=8 时 joint_knn（7.0）反而比 ens（4.8）差。在多步任务里，联合支撑约束没能像 pilot 1 那样解决问题，n=8 时所有惩罚都还剩 5–10 的 regret。
 2. **因果对照（independent 数据）结果是混合的：**
    - attention：n=8 时有拥挤数据，regret 下降（joint_knn 差 +3.1，p<0.001），符合假设。
    - joint：反而变差（ens:5 在 n=8 时差 −7.4，p=0.001）。数据里有拥挤并没有帮到 joint 模型，可能是同样数据量下有效覆盖变稀了。
    - additive：基本由模型容量决定（结构上无法表示交互），和 OOD 关系不大。additive 应该当作"容量不足"的对照，而不是 OOD 的证据。
-3. **H3 只在 pilot 1 中验证过。** spread 里没做数据量、K 等消融；只做了 horizon，而 horizon 被短视混淆了。
-4. **pair_knn 和 joint_knn 差不多，**没有证据表明 pair 级支撑就够了，或者比联合支撑更好。
+3. **additive 偏差对 K、数据量不敏感这一点只在 pilot 1 中验证过。** spread 里没做数据量、K 等消融；只做了 horizon，而 horizon 被短视混淆了。
+4. **pair_knn 不如 joint_knn。** additive 上 n=4/8 差很多（34.3 / 35.9 vs 6.0 / 12.9），joint 上差不多，attention n=8 更差。可能是对所有智能体对取平均稀释了信号，需要 λ 扫描后再下结论。
 
 **建议的研究方向调整（供你决定）：**
 - 主线论点建议定为"集成不确定性在 joint-OOD 上**校准失败**（排序正确但幅度严重低估），利用来自单步拥挤乐观"。这一点证据最强。
@@ -118,7 +121,7 @@ exploit gap = 沿真实轨迹的单步模型误差 + 累积误差（compounding�
 - 所有运行 0 FAIL。中途修过的 bug：init_logged 的 reshape、stdout 管道断开导致丢结果、ablation chain 参数顺序、`-WaitPid 0` 死等。这些都在产生错误数据之前修好了，或者只丢了结果、没有写入错误数据。
 
 ## 5. 已知局限
-1. Pilot 1 的 PyTorch 移植版没有和 JAX 参考实现做过数值对比。
+1. Pilot 1 的 PyTorch 移植版已和 JAX 参考实现对比过（port_check/，n=2/4，2 seeds，结果一致），但只覆盖了 additive 和 joint。
 2. spread 的 oracle 只学到固定映射，regret 是相对"同策略类能达到的最好"，不是真实最优。
 3. duplicate_rate 在 n=8 时饱和；uncovered_frac 是中途加的，早期 cells 没有。
 4. spread n=8 的部分 cell 只有 3–4 个 seed 有 uncovered_frac 等后加指标。
