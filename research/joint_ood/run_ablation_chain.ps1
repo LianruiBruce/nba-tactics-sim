@@ -30,7 +30,8 @@ function Stage($what, $out, $gridArgs) {
 }
 
 Say "waiting for pid $WaitPid"
-while (Get-Process -Id $WaitPid -ErrorAction SilentlyContinue) { Start-Sleep 60 }
+# pid 0 is the Idle process on Windows and always exists, so 0 means "don't wait"
+while ($WaitPid -gt 0 -and (Get-Process -Id $WaitPid -ErrorAction SilentlyContinue)) { Start-Sleep 60 }
 Say "chain start"
 Stage "pair_knn on main grid" "$J/spread_pair" "--ns 2,4,8 --seeds 5 --seed_start 0 --configs pair_knn:1"
 Stage "horizon 5" "$J/abl_h5" "--ns 4,8 --seeds 3 --data assignment --configs none:0,ens:1,joint_knn:1,pair_knn:1 -- --horizon 5"
