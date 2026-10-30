@@ -1,0 +1,7 @@
+device: cuda
+reference n=4 seed=0 216s
+reference n=4 seed=1 207s
+reference n=4 seed=2 206s
+reference n=8 seed=0 206s
+reference n=8 seed=1 205s
+reference n=8 seed=2 205s

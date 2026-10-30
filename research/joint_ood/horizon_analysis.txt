@@ -1,3 +1,5 @@
+C:\Users\gengl\venvs\torch-cu124\Lib\site-packages\scipy\stats\_axis_nan_policy.py:430: RuntimeWarning: Precision loss occurred in moment calculation due to catastrophic cancellation. This occurs when the data are nearly identical. Results may be unreliable.
+  return hypotest_fun_in(*args, **kwds)
 Seeds [0, 1, 2], assignment data. Regret = oracle true return - policy true return.
 World-model check, crowded-state optimism (same seed and data, so should match across runs):
   additive    n=4 H=25: 0.277  n=4 H=10: 0.277  n=4 H=5: 0.277  n=8 H=25: 0.211  n=8 H=10: 0.211  n=8 H=5: 0.211
@@ -66,3 +68,28 @@ attention  ens:1         4    0.00±0.00    0.19±0.08    0.22±0.02   -0.19 (p=
 attention  ens:1         8     nan± nan    0.53±0.10    0.59±0.03     nan (p=nan)     nan (p=nan)
 attention  joint_knn:1   4    0.00±0.00    0.21±0.07    0.26±0.10   -0.21 (p=0.006)   -0.26 (p=0.008)
 attention  joint_knn:1   8     nan± nan    0.57±0.10    0.75±0.01     nan (p=nan)     nan (p=nan)
+
+Short-horizon cost in the true dynamics: oracle_25 - oracle_H (regret of the H-step oracle)
+  n=4   H=10:   6.87±5.54   H=5:  10.38±0.90
+  n=8   H=10:  12.90±2.92   H=5:  19.41±4.16
+
+Model part of the regret at matched horizon: oracle_H - policy_H, then H=25 minus H, paired by seed
+arch       config        n          H=25          H=10           H=5             25-10              25-5
+additive   none:0        4   53.46±7.40   33.59±18.98   35.13±19.46   19.87 (p=0.060)   18.33 (p=0.053)
+additive   none:0        8   57.33±8.92   45.18±17.93   37.01±23.04   12.16 (p=0.148)   20.33 (p=0.095)
+additive   ens:1         4   30.12±33.46    8.18±8.86    2.36±3.78   21.94 (p=0.155)   27.76 (p=0.072)
+additive   ens:1         8   34.11±16.76    5.70±28.54   -7.95±2.80   28.41 (p=0.049)   42.06 (p=0.011)
+additive   joint_knn:1   4    6.35±5.17    2.42±3.36   -1.97±3.09    3.93 (p=0.043)    8.31 (p=0.022)
+additive   joint_knn:1   8   13.85±6.68   -4.07±5.18  -10.56±5.70   17.92 (p=0.001)   24.41 (p=0.001)
+joint      none:0        4   23.92±4.66   14.03±32.72   25.76±19.05    9.90 (p=0.344)   -1.84 (p=0.719)
+joint      none:0        8   28.59±34.17   16.75±24.26   18.33±14.01   11.84 (p=0.240)   10.27 (p=0.439)
+joint      ens:1         4    2.69±0.91   -2.46±5.92   -5.41±2.17    5.14 (p=0.074)    8.10 (p=0.007)
+joint      ens:1         8    7.13±1.49   -5.91±3.57  -12.14±4.94   13.05 (p=0.001)   19.27 (p=0.002)
+joint      joint_knn:1   4    2.26±0.82   -2.44±5.38   -5.11±1.69    4.70 (p=0.070)    7.37 (p=0.006)
+joint      joint_knn:1   8    6.42±0.55   -5.79±4.18  -11.63±5.59   12.21 (p=0.005)   18.05 (p=0.004)
+attention  none:0        4    0.23±0.17    2.46±3.85    1.42±2.74   -2.24 (p=0.127)   -1.19 (p=0.203)
+attention  none:0        8   10.08±19.79    5.34±8.50    4.18±44.91    4.74 (p=0.493)    5.90 (p=0.709)
+attention  ens:1         4    0.96±0.37   -0.10±3.47   -2.42±1.59    1.06 (p=0.358)    3.37 (p=0.011)
+attention  ens:1         8    5.07±6.71    3.04±7.03   -6.54±8.57    2.03 (p=0.131)   11.60 (p=0.043)
+attention  joint_knn:1   4    1.17±0.08    0.43±3.20   -3.04±3.78    0.75 (p=0.428)    4.21 (p=0.042)
+attention  joint_knn:1   8    6.50±1.48   -4.06±3.75  -11.55±5.31   10.57 (p=0.012)   18.05 (p=0.007)
