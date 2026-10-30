@@ -1,0 +1,95 @@
+{
+ "args": {
+  "ns": "8",
+  "seeds": 1,
+  "archs": "joint",
+  "data": "assignment",
+  "configs": "none:0,ens:1,joint_knn:1",
+  "episodes": 4000,
+  "ensemble": 5,
+  "wm_steps": 6000,
+  "iters": 2000,
+  "member": "random",
+  "lr": 0.001,
+  "batch": 256,
+  "pol_hidden": 128,
+  "seed_start": 2,
+  "no_agent_id": false,
+  "horizon": 10,
+  "no_reference": true,
+  "reference_only": false,
+  "out": "research/joint_ood/abl_h10\\cell_n8_s2_assignment_joint.json"
+ },
+ "cells": [
+  {
+   "n": 8,
+   "seed": 2,
+   "data": "assignment",
+   "arch": "joint",
+   "ensemble": 5,
+   "agent_id": true,
+   "episodes": 4000,
+   "wm_time": 29.721729516983032,
+   "behaviour_return": -6.470594882965088,
+   "diag": {
+    "assignment": {
+     "abs_err": 0.03364741802215576,
+     "optimism": -0.008633319288492203,
+     "ens_std": 0.05129886791110039,
+     "std_over_err": 1.5246003866195679
+    },
+    "duplicate": {
+     "abs_err": 0.19980943202972412,
+     "optimism": 0.18436133861541748,
+     "ens_std": 0.05777408182621002,
+     "std_over_err": 0.28914591670036316
+    },
+    "uniform": {
+     "abs_err": 0.16167095303535461,
+     "optimism": 0.11171284317970276,
+     "ens_std": 0.13701343536376953,
+     "std_over_err": 0.8474833369255066
+    }
+   },
+   "policies": [
+    {
+     "true_return": -45.396644592285156,
+     "duplicate_rate": 1.0,
+     "final_coverage": 4.09978723526001,
+     "uncovered_frac": 1.0,
+     "model_return": 0.035706084221601486,
+     "exploit_gap": 45.43235067650676,
+     "mean_uncertainty": 5.250032424926758,
+     "penalty": "none",
+     "lam": 0.0,
+     "time": 255.39583277702332
+    },
+    {
+     "true_return": -10.43925666809082,
+     "duplicate_rate": 0.9900000691413879,
+     "final_coverage": 0.3413125276565552,
+     "uncovered_frac": 0.8601875305175781,
+     "model_return": -1.7873518466949463,
+     "exploit_gap": 8.651904821395874,
+     "mean_uncertainty": 0.404350608587265,
+     "penalty": "ens",
+     "lam": 1.0,
+     "time": 213.58092141151428
+    },
+    {
+     "true_return": -10.241426467895508,
+     "duplicate_rate": 0.9925000667572021,
+     "final_coverage": 0.3388446867465973,
+     "uncovered_frac": 0.8413750529289246,
+     "model_return": -1.3918555974960327,
+     "exploit_gap": 8.849570870399475,
+     "mean_uncertainty": 0.4566320478916168,
+     "penalty": "joint_knn",
+     "lam": 1.0,
+     "time": 210.64011573791504
+    }
+   ]
+  }
+ ],
+ "reference": []
+}

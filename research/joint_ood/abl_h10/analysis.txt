@@ -1,0 +1,67 @@
+Oracle true return by n: {4: np.float64(-2.76), 8: np.float64(-2.906)}
+
+1. Reward-model optimism on crowded (duplicate) states and ensemble std/err, assignment data
+arch         n=4: optimism  std/err   n=8: optimism  std/err
+additive       0.28± 0.01   0.05     0.21± 0.05   0.09
+joint          0.12± 0.03   0.29     0.18± 0.02   0.33
+attention      0.15± 0.00   0.25     0.16± 0.04   0.25
+   same, independent data (crowding present in the data):
+additive           -          nan         -          nan
+joint              -          nan         -          nan
+attention          -          nan         -          nan
+
+2. Regret vs oracle, assignment data (mean ± 95% CI over seeds)
+arch       penalty                  n=4             n=8
+additive   none:0         40.46±21.02   58.07±15.30
+additive   ens:1          15.05± 3.35   18.60±31.07
+additive   joint_knn:1     9.29± 3.34    8.83± 2.58
+joint      none:0         20.90±38.19   29.65±26.27
+joint      ens:1           4.41± 2.05    6.99± 0.76
+joint      joint_knn:1     4.43± 1.72    7.11± 1.46
+attention  none:0          9.34± 8.96   18.24± 9.21
+attention  ens:1           6.77± 2.10   15.94± 9.13
+attention  joint_knn:1     7.30± 3.90    8.83± 0.84
+
+2. Regret vs oracle, independent data (mean ± 95% CI over seeds)
+arch       penalty                  n=4             n=8
+additive   none:0              -              -      
+additive   ens:1               -              -      
+additive   joint_knn:1         -              -      
+joint      none:0              -              -      
+joint      ens:1               -              -      
+joint      joint_knn:1         -              -      
+attention  none:0              -              -      
+attention  ens:1               -              -      
+attention  joint_knn:1         -              -      
+
+3. Causal control: regret(assignment) - regret(independent), paired by seed. Positive = the
+   crowding-free data makes things worse, as expected if the failure is joint-action OOD
+additive   none:0        n=4:     nan (n=0)          n=8:     nan (n=0)        
+additive   ens:1         n=4:     nan (n=0)          n=8:     nan (n=0)        
+additive   joint_knn:1   n=4:     nan (n=0)          n=8:     nan (n=0)        
+joint      none:0        n=4:     nan (n=0)          n=8:     nan (n=0)        
+joint      ens:1         n=4:     nan (n=0)          n=8:     nan (n=0)        
+joint      joint_knn:1   n=4:     nan (n=0)          n=8:     nan (n=0)        
+attention  none:0        n=4:     nan (n=0)          n=8:     nan (n=0)        
+attention  ens:1         n=4:     nan (n=0)          n=8:     nan (n=0)        
+attention  joint_knn:1   n=4:     nan (n=0)          n=8:     nan (n=0)        
+
+4. Penalty effect: regret(none) - regret(penalty), assignment data, paired by seed. Positive = penalty helps
+additive   ens:1         n=4:   25.42 (n=3, p=0.039)  n=8:   39.48 (n=3, p=0.055)
+additive   joint_knn:1   n=4:   31.17 (n=3, p=0.018)  n=8:   49.25 (n=3, p=0.005)
+joint      ens:1         n=4:   16.48 (n=3, p=0.203)  n=8:   22.67 (n=3, p=0.069)
+joint      joint_knn:1   n=4:   16.47 (n=3, p=0.200)  n=8:   22.54 (n=3, p=0.073)
+attention  ens:1         n=4:    2.57 (n=3, p=0.249)  n=8:    2.30 (n=3, p=0.564)
+attention  joint_knn:1   n=4:    2.04 (n=3, p=0.249)  n=8:    9.41 (n=3, p=0.051)
+
+5. Exploit gap (model return - true return) and uncovered landmark fraction, assignment data
+arch       penalty              gap n=4        unc n=4         gap n=8        unc n=8
+additive   none:0         34.68±20.86    1.00± 0.00   88.68±27.24    1.00± 0.00
+additive   ens:1          15.17± 3.79    0.43± 0.40   32.93±69.07    0.95± 0.13
+additive   joint_knn:1     8.65± 3.25    0.27± 0.02   12.58± 2.18    0.89± 0.07
+joint      none:0         18.14±34.28    0.80± 0.86   35.69±22.93    1.00± 0.00
+joint      ens:1           2.45± 1.37    0.26± 0.13    7.92± 1.59    0.81± 0.10
+joint      joint_knn:1     2.38± 0.67    0.24± 0.10    8.49± 0.77    0.84± 0.05
+attention  none:0          7.00± 6.80    0.21± 0.24   11.31±19.94    0.89± 0.34
+attention  ens:1           4.14± 1.66    0.19± 0.08   13.39±14.71    0.53± 0.10
+attention  joint_knn:1     4.12± 3.41    0.21± 0.07    5.67± 3.88    0.57± 0.10
