@@ -1,0 +1,161 @@
+C:\Users\gengl\venvs\torch-cu124\Lib\site-packages\numpy\_core\fromnumeric.py:3824: RuntimeWarning: Mean of empty slice
+  return _methods._mean(a, axis=axis, dtype=dtype,
+C:\Users\gengl\venvs\torch-cu124\Lib\site-packages\numpy\_core\_methods.py:142: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+Oracle true return by n: {8: np.float64(nan)}
+
+1. Reward-model optimism on crowded (duplicate) states and ensemble std/err, assignment data
+arch         n=8: optimism  std/err
+additive       0.20± 0.19   0.11
+joint          0.18± 0.09   0.36
+attention      0.15          0.33
+   same, independent data (crowding present in the data):
+additive           -          nan
+joint              -          nan
+attention          -          nan
+
+2. Regret vs oracle, assignment data (mean ± 95% CI over seeds)
+arch       penalty                  n=8
+additive   ens:0.3             -      
+additive   ens:3               -      
+additive   ens:10              -      
+additive   agent_knn:0.3        -      
+additive   agent_knn:3         -      
+additive   agent_knn:10        -      
+additive   joint_knn:0.3        -      
+additive   joint_knn:3         -      
+additive   joint_knn:10        -      
+joint      ens:0.3             -      
+joint      ens:3               -      
+joint      ens:10              -      
+joint      agent_knn:0.3        -      
+joint      agent_knn:3         -      
+joint      agent_knn:10        -      
+joint      joint_knn:0.3        -      
+joint      joint_knn:3         -      
+joint      joint_knn:10        -      
+attention  ens:0.3             -      
+attention  ens:3               -      
+attention  ens:10              -      
+attention  agent_knn:0.3        -      
+attention  agent_knn:3         -      
+attention  agent_knn:10        -      
+attention  joint_knn:0.3        -      
+attention  joint_knn:3         -      
+attention  joint_knn:10        -      
+
+2. Regret vs oracle, independent data (mean ± 95% CI over seeds)
+arch       penalty                  n=8
+additive   ens:0.3             -      
+additive   ens:3               -      
+additive   ens:10              -      
+additive   agent_knn:0.3        -      
+additive   agent_knn:3         -      
+additive   agent_knn:10        -      
+additive   joint_knn:0.3        -      
+additive   joint_knn:3         -      
+additive   joint_knn:10        -      
+joint      ens:0.3             -      
+joint      ens:3               -      
+joint      ens:10              -      
+joint      agent_knn:0.3        -      
+joint      agent_knn:3         -      
+joint      agent_knn:10        -      
+joint      joint_knn:0.3        -      
+joint      joint_knn:3         -      
+joint      joint_knn:10        -      
+attention  ens:0.3             -      
+attention  ens:3               -      
+attention  ens:10              -      
+attention  agent_knn:0.3        -      
+attention  agent_knn:3         -      
+attention  agent_knn:10        -      
+attention  joint_knn:0.3        -      
+attention  joint_knn:3         -      
+attention  joint_knn:10        -      
+
+3. Causal control: regret(assignment) - regret(independent), paired by seed. Positive = the
+   crowding-free data makes things worse, as expected if the failure is joint-action OOD
+additive   ens:0.3       n=8:     nan (n=0)        
+additive   ens:3         n=8:     nan (n=0)        
+additive   ens:10        n=8:     nan (n=0)        
+additive   agent_knn:0.3  n=8:     nan (n=0)        
+additive   agent_knn:3   n=8:     nan (n=0)        
+additive   agent_knn:10  n=8:     nan (n=0)        
+additive   joint_knn:0.3  n=8:     nan (n=0)        
+additive   joint_knn:3   n=8:     nan (n=0)        
+additive   joint_knn:10  n=8:     nan (n=0)        
+joint      ens:0.3       n=8:     nan (n=0)        
+joint      ens:3         n=8:     nan (n=0)        
+joint      ens:10        n=8:     nan (n=0)        
+joint      agent_knn:0.3  n=8:     nan (n=0)        
+joint      agent_knn:3   n=8:     nan (n=0)        
+joint      agent_knn:10  n=8:     nan (n=0)        
+joint      joint_knn:0.3  n=8:     nan (n=0)        
+joint      joint_knn:3   n=8:     nan (n=0)        
+joint      joint_knn:10  n=8:     nan (n=0)        
+attention  ens:0.3       n=8:     nan (n=0)        
+attention  ens:3         n=8:     nan (n=0)        
+attention  ens:10        n=8:     nan (n=0)        
+attention  agent_knn:0.3  n=8:     nan (n=0)        
+attention  agent_knn:3   n=8:     nan (n=0)        
+attention  agent_knn:10  n=8:     nan (n=0)        
+attention  joint_knn:0.3  n=8:     nan (n=0)        
+attention  joint_knn:3   n=8:     nan (n=0)        
+attention  joint_knn:10  n=8:     nan (n=0)        
+
+4. Penalty effect: regret(none) - regret(penalty), assignment data, paired by seed. Positive = penalty helps
+additive   ens:3         n=8:     nan (n=0)        
+additive   ens:10        n=8:     nan (n=0)        
+additive   agent_knn:0.3  n=8:     nan (n=0)        
+additive   agent_knn:3   n=8:     nan (n=0)        
+additive   agent_knn:10  n=8:     nan (n=0)        
+additive   joint_knn:0.3  n=8:     nan (n=0)        
+additive   joint_knn:3   n=8:     nan (n=0)        
+additive   joint_knn:10  n=8:     nan (n=0)        
+joint      ens:3         n=8:     nan (n=0)        
+joint      ens:10        n=8:     nan (n=0)        
+joint      agent_knn:0.3  n=8:     nan (n=0)        
+joint      agent_knn:3   n=8:     nan (n=0)        
+joint      agent_knn:10  n=8:     nan (n=0)        
+joint      joint_knn:0.3  n=8:     nan (n=0)        
+joint      joint_knn:3   n=8:     nan (n=0)        
+joint      joint_knn:10  n=8:     nan (n=0)        
+attention  ens:3         n=8:     nan (n=0)        
+attention  ens:10        n=8:     nan (n=0)        
+attention  agent_knn:0.3  n=8:     nan (n=0)        
+attention  agent_knn:3   n=8:     nan (n=0)        
+attention  agent_knn:10  n=8:     nan (n=0)        
+attention  joint_knn:0.3  n=8:     nan (n=0)        
+attention  joint_knn:3   n=8:     nan (n=0)        
+attention  joint_knn:10  n=8:     nan (n=0)        
+
+5. Exploit gap (model return - true return) and uncovered landmark fraction, assignment data
+arch       penalty              gap n=8        unc n=8
+additive   ens:0.3        82.71±155.38    1.00± 0.00
+additive   ens:3          27.58± 6.94    0.66± 0.44
+additive   ens:10         19.42±18.20    0.59± 0.18
+additive   agent_knn:0.3   78.88±101.96    1.00± 0.00
+additive   agent_knn:3    51.60±61.25    0.58± 0.71
+additive   agent_knn:10   42.46±11.87    0.81± 0.79
+additive   joint_knn:0.3   37.32±64.87    0.93± 0.82
+additive   joint_knn:3    10.33± 0.49    0.52± 0.26
+additive   joint_knn:10    8.46± 5.82    0.56± 0.20
+joint      ens:0.3         8.22± 0.66    0.82± 0.02
+joint      ens:3           6.89± 1.75    0.72± 0.39
+joint      ens:10          6.84± 0.38    0.72± 0.37
+joint      agent_knn:0.3   13.62±60.00    0.90± 0.79
+joint      agent_knn:3    14.35±11.83    0.43± 0.13
+joint      agent_knn:10   49.22±188.16    0.79± 0.04
+joint      joint_knn:0.3    9.29± 7.06    0.86± 0.23
+joint      joint_knn:3     6.68± 2.62    0.56± 0.18
+joint      joint_knn:10    7.07± 3.73    0.57± 0.16
+attention  ens:0.3         1.98           0.15       
+attention  ens:3           1.28           0.12       
+attention  ens:10          1.51           0.42       
+attention  agent_knn:0.3    1.28           0.12       
+attention  agent_knn:3     0.68           0.25       
+attention  agent_knn:10    0.07           0.00       
+attention  joint_knn:0.3    5.73           0.42       
+attention  joint_knn:3     3.47           0.49       
+attention  joint_knn:10    2.89           0.51       
